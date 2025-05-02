@@ -24,7 +24,7 @@
   <div class="bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-xl mb-8 text-center">
     <div id="currentZmanLabel" class="text-2xl font-semibold">טוען...</div>
     <div id="currentZmanTime" class="text-4xl font-bold my-2">00:00:00</div>
-    <div id="countdown" class="text-2xl text-green-400 font-bold">(00:00:00)</div>
+    <div id="countdown" class="text-2xl text-green-400 font-bold">00:00</div>
   </div>
   <div id="zmanList" class="grid gap-4 w-full max-w-xl bg-gray-900 bg-opacity-60 rounded-xl p-4 shadow-xl backdrop-blur"></div>
 
@@ -38,19 +38,29 @@
     const calendarInfoEl = document.getElementById("calendarInfo");
 
     function formatTime(date) {
-      return date.toLocaleTimeString("he-IL", {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
+  let time = date.toLocaleTimeString("he-IL", {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
+  time = time.replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
+  let [h, m, s] = time.split(":");
+  if (h.startsWith("0")) h = h.slice(1);
+  return `${h}:${m}:${s}`;
+
     }
 
     function formatCountdown(seconds) {
-      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
-      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-      const s = String(seconds % 60).padStart(2, '0');
-      return `(${h}:${m}:${s})`;
+      let h = Math.floor(seconds / 3600);
+      let m = Math.floor((seconds % 3600) / 60);
+      let s = seconds % 60;
+      const pad = n => n < 10 ? '0' + n : n;
+      if (h > 0) {
+        return `${h}:${pad(m)}:${pad(s)}`;
+      } else {
+        return `${m}:${pad(s)}`;
+      }
     }
 
     function updateClockDisplay() {
@@ -58,12 +68,16 @@
       clockEl.textContent = formatTime(now);
     }
 
-    function updateHebrewDate() {
-      const now = new Date();
-      const formatter = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      });
-      hebrewDateEl.textContent = formatter.format(now);
+    async function updateHebrewDate() {
+      try {
+        const now = new Date();
+        const res = await fetch(`https://www.hebcal.com/converter?cfg=json&gy=${now.getFullYear()}&gm=${now.getMonth() + 1}&gd=${now.getDate()}&g2h=1`);
+        const data = await res.json();
+        hebrewDateEl.textContent = data.hebrew;
+      } catch (e) {
+        console.error("Hebrew date error:", e);
+        hebrewDateEl.textContent = "שגיאה בתאריך";
+      }
     }
 
     async function fetchCalendarInfo() {
@@ -106,7 +120,7 @@
 
     async function startClock() {
       updateClockDisplay();
-      updateHebrewDate();
+      await updateHebrewDate();
       await fetchCalendarInfo();
 
       const now = new Date();
@@ -158,9 +172,9 @@
 
         const weekdayZmanim = [
           { name: "ברכות", time: timeMap["ברכות"] },
-          { name: "רבי ישמעל", time: rYishmael },
+          { name: "רבי ישמעאל", time: rYishmael },
           { name: "ישתבח", time: timeMap["ישתבח"] },
-          { name: "קריעת שמע", time: kriatShema },
+          { name: "קריאת שמע", time: kriatShema },
           { name: "אמת", time: emes }
         ];
 
@@ -199,7 +213,6 @@
       highlightNextZman();
       setInterval(() => {
         updateClockDisplay();
-        updateHebrewDate();
         highlightNextZman();
       }, 1000);
     }
