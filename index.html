@@ -85,10 +85,13 @@
     const countdown = document.getElementById("countdown");
     const clockEl = document.getElementById("clock");
 
-    function formatTime(date) {
-  return date.toLocaleTimeString("he-IL", { hour: 'numeric', minute: '2-digit', hour12: true });
-});
-    }
+   function formatTime(date) {
+  return date.toLocaleTimeString("he-IL", {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+}
 
     function formatCountdown(seconds) {
       const m = String(Math.floor(seconds / 60)).padStart(2, '0');
