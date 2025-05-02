@@ -86,7 +86,8 @@
     const clockEl = document.getElementById("clock");
 
     function formatTime(date) {
-      return date.toLocaleTimeString("he-IL", { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString("he-IL", { hour: 'numeric', minute: '2-digit', hour12: true });
+});
     }
 
     function formatCountdown(seconds) {
@@ -101,22 +102,33 @@
     }
 
     function highlightNextZman(zmanim) {
-      const now = new Date();
-      for (let i = 0; i < zmanim.length; i++) {
-        const [name, time] = zmanim[i];
-        if (time > now) {
-          const diff = Math.floor((time - now) / 1000);
-          labelEl.textContent = name;
-          timeEl.textContent = formatTime(time);
-          countdown.textContent = formatCountdown(diff);
-          return;
-        }
-      }
-      labelEl.textContent = "מעדכן...";
-      timeEl.textContent = "--:--";
-      countdown.textContent = "(00:00)";
-      startClockTomorrow();
+  const now = new Date();
+  zmanListEl.innerHTML = "";
+  for (let i = 0; i < zmanim.length; i++) {
+    const [name, time] = zmanim[i];
+    const zmanDiv = document.createElement("div");
+    zmanDiv.className = "zman";
+    zmanDiv.innerHTML = `<div><strong>${name}</strong></div><div>${formatTime(time)}</div>`;
+    zmanListEl.appendChild(zmanDiv);
+
+    if (time > now && !labelEl.dataset.found) {
+      const diff = Math.floor((time - now) / 1000);
+      labelEl.textContent = name;
+      labelEl.dataset.found = "true";
+      timeEl.textContent = formatTime(time);
+      countdown.textContent = formatCountdown(diff);
+      labelEl.dataset.found = "true";
     }
+  }
+
+  if (!labelEl.dataset.found) {
+    labelEl.textContent = "מעדכן...";
+    labelEl.dataset.found = "";
+    timeEl.textContent = "--:--";
+    countdown.textContent = "(00:00)";
+    startClockTomorrow();
+  }
+}
 
     async function fetchLocation() {
       const res = await fetch("https://ipapi.co/json/");
