@@ -68,19 +68,21 @@
       hebrewDateEl.textContent = formatter.format(now);
     }
 
-    async function fetchCalendarInfo(dateStr) {
-  const res = await fetch('https://www.sefaria.org/api/calendar');
-  const data = await res.json();
-
-  const parsha = data.parashat || '---';
-  const daf = data.dafYomi?.he || '---';
-
-  calendarInfoEl.innerHTML = `
-    <div class="text-xl">
-      📖 פרשת השבוע: ${parsha}<br>
-      📘 דף יומי: ${daf}
-    </div>
-  `;
+    async function fetchCalendarInfo() {
+      try {
+        const res = await fetch('https://www.sefaria.org/api/calendar');
+        const data = await res.json();
+        const parsha = data.parashat || '---';
+        const daf = (data.dafYomi && data.dafYomi.he) || '---';
+        calendarInfoEl.innerHTML = `
+          <div class="text-xl">
+            📖 פרשת השבוע: ${parsha}<br>
+            📘 דף יומי: ${daf}
+          </div>
+        `;
+      } catch {
+        calendarInfoEl.innerHTML = `<div class="text-xl">שגיאה בטעינת נתוני לוח השנה</div>`;
+      }
     }
 
     async function fetchLocation() {
@@ -92,11 +94,11 @@
     async function startClock() {
       updateClockDisplay();
       updateHebrewDate();
+      await fetchCalendarInfo();
 
       const now = new Date();
       const today = now.toISOString().split("T")[0];
       const { lat, lon } = await fetchLocation();
-      await fetchCalendarInfo(today);
 
       const options = {
         date: today,
@@ -105,12 +107,13 @@
         latitude: lat,
         longitude: lon,
         elevation: 0,
-        complexZmanim: true,
+        complexZmanim: true
       };
 
       const zmanim = KosherZmanim.getZmanimJson(options).Zmanim;
       const isShabbos = new Date().getDay() === 6;
-      const zmanimList = [
+
+      let zmanimList = [
         { name: "סוף זמן קריאת שמע (מ\"א)", time: new Date(zmanim.SofZmanShmaMGA) },
         { name: "סוף זמן תפילה (מ\"א)", time: new Date(zmanim.SofZmanTfilaMGA) },
         { name: "עלות השחר", time: new Date(zmanim.Alos72) },
@@ -151,6 +154,7 @@
         zmanimList.push(...weekdayZmanim);
       }
 
+      zmanimList = zmanimList.filter(z => z.time instanceof Date && !isNaN(z.time));
       zmanimList.sort((a, b) => a.time - b.time);
 
       function highlightNextZman() {
@@ -173,6 +177,8 @@
           labelEl.textContent = soonest.name;
           timeEl.textContent = formatTime(soonest.time);
           countdown.textContent = formatCountdown(diff);
+        } else {
+          labelEl.textContent = "אין זמני יום זמינים כרגע";
         }
       }
 
