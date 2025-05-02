@@ -38,17 +38,16 @@
     const calendarInfoEl = document.getElementById("calendarInfo");
 
     function formatTime(date) {
-  let time = date.toLocaleTimeString("he-IL", {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
-  });
-  time = time.replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
-  let [h, m, s] = time.split(":");
-  if (h.startsWith("0")) h = h.slice(1);
-  return `${h}:${m}:${s}`;
-
+      let time = date.toLocaleTimeString("he-IL", {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      time = time.replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
+      let [h, m, s] = time.split(":");
+      if (h.startsWith("0")) h = h.slice(1);
+      return `${h}:${m}:${s}`;
     }
 
     function formatCountdown(seconds) {
@@ -56,11 +55,7 @@
       let m = Math.floor((seconds % 3600) / 60);
       let s = seconds % 60;
       const pad = n => n < 10 ? '0' + n : n;
-      if (h > 0) {
-        return `${h}:${pad(m)}:${pad(s)}`;
-      } else {
-        return `${m}:${pad(s)}`;
-      }
+      return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
     }
 
     function updateClockDisplay() {
@@ -186,14 +181,28 @@
 
       function highlightNextZman() {
         const now = new Date();
+        const chatzosTime = zmanimList.find(z => z.name === "חצות היום")?.time || null;
         zmanListEl.innerHTML = "";
         labelEl.dataset.found = "";
         let soonest = null;
 
         for (const { name, time } of zmanimList) {
-          const div = document.createElement("div");
+          const isPast = time <= now;
+          const isAfterChatzos = chatzosTime && now > chatzosTime;
           const isNext = !soonest && time > now;
-          div.className = `p-4 rounded-xl shadow text-xl flex justify-between items-center ${isNext ? 'bg-yellow-500 text-black font-bold' : 'bg-gray-700'}`;
+
+          // ⛔ Skip rendering passed zmanim until after חצות
+          if (isPast && !isAfterChatzos) continue;
+
+          const div = document.createElement("div");
+          div.className = `transition-all duration-700 text-xl flex justify-between items-center rounded-xl shadow ${
+            isNext ? 'bg-yellow-500 text-black font-bold' : 'bg-gray-700'
+          }`;
+
+          div.style.opacity = "1";
+          div.style.padding = "1rem";
+          div.style.marginBottom = "1rem";
+
           div.innerHTML = `<span class='font-semibold'>${name}</span><span>${formatTime(time)}</span>`;
           zmanListEl.appendChild(div);
 
@@ -207,6 +216,8 @@
           countdown.textContent = formatCountdown(diff);
         } else {
           labelEl.textContent = "אין זמני יום זמינים כרגע";
+          timeEl.textContent = "--:--:--";
+          countdown.textContent = "--:--";
         }
       }
 
