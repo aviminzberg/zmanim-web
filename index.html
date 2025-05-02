@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>זמני יום</title>
-  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       margin: 0;
@@ -15,48 +14,60 @@
       align-items: center;
       justify-content: flex-start;
       height: 100vh;
-      padding: 30px;
+      padding: 40px 20px;
+      font-size: 1.25rem;
     }
+
     h1 {
-      font-size: 2rem;
+      font-size: 2.5rem;
       margin: 10px;
       color: #4da6ff;
     }
+
     #countdown {
-      font-size: 5rem;
+      font-size: 6rem;
       font-weight: bold;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
+      text-align: center;
     }
+
     .zman-list {
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 18px;
     }
+
     .zman {
       background: #222;
       border-radius: 15px;
-      padding: 15px 20px;
+      padding: 20px 25px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
     }
+
     .zman.highlight {
       background: #0047ab;
       color: white;
     }
+
     .zman.shabbos {
       background: #f4c542;
       color: #111;
       font-weight: bold;
     }
+
     .zman-name {
       font-weight: bold;
+      font-size: 1.4rem;
     }
+
     .zman-time {
       font-family: monospace;
+      font-size: 1.4rem;
     }
   </style>
 </head>
