@@ -1,30 +1,212 @@
-async function fetchCalendarInfo() {
-  try {
-    const res = await fetch("https://corsproxy.io/?https://www.sefaria.org/api/calendar");
-    const parsed = await res.json();
-    const parsha = parsed.parashat || '---';
-    const daf = parsed.dafYomi?.he || '---';
-    let candleTime = '---';
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>זמני יום</title>
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
+  <style>
+    body {
+      font-family: 'Varela Round', sans-serif;
+      background-color: #111827;
+    }
+  </style>
+</head>
+<body class="text-white p-4 min-h-screen flex flex-col items-center">
 
-    if (parsed.items && Array.isArray(parsed.items)) {
-      const candle = parsed.items.find(item => item.title?.includes("הדלקת נרות") || item.he?.includes("הדלקת נרות"));
-      if (candle && candle.date) {
-        candleTime = new Date(candle.date).toLocaleTimeString("he-IL", {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+  <div id="calendarInfo" class="text-center text-lg mb-4">טוען נתוני לוח שנה...</div>
+
+  <div class="text-center mt-2">
+    <div id="clock" class="text-6xl font-bold mb-2">00:00:00</div>
+    <div id="hebrewDate" class="text-lg text-gray-300 mb-8">תאריך עברי</div>
+  </div>
+
+  <div class="bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-xl mb-8 text-center">
+    <div id="currentZmanLabel" class="text-2xl font-semibold">טוען...</div>
+    <div id="currentZmanTime" class="text-4xl font-bold my-2">00:00:00</div>
+    <div id="countdown" class="text-2xl text-green-400 font-bold">(00:00:00)</div>
+  </div>
+
+  <div id="zmanList" class="grid gap-4 w-full max-w-xl"></div>
+
+  <script>
+    const zmanListEl = document.getElementById("zmanList");
+    const labelEl = document.getElementById("currentZmanLabel");
+    const timeEl = document.getElementById("currentZmanTime");
+    const countdown = document.getElementById("countdown");
+    const clockEl = document.getElementById("clock");
+    const hebrewDateEl = document.getElementById("hebrewDate");
+    const calendarInfoEl = document.getElementById("calendarInfo");
+
+    function formatTime(date) {
+      return date.toLocaleTimeString("en-US", {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      }).toLowerCase();
+    }
+
+    function formatCountdown(seconds) {
+      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      return `(${h}:${m}:${s})`;
+    }
+
+    function updateClockDisplay() {
+      const now = new Date();
+      clockEl.textContent = formatTime(now);
+    }
+
+    function updateHebrewDate() {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+      hebrewDateEl.textContent = formatter.format(now);
+    }
+
+    async function fetchCalendarInfo() {
+      try {
+        const res = await fetch("https://corsproxy.io/?https://www.sefaria.org/api/calendar");
+        const parsed = await res.json();
+        const parsha = parsed.parashat || '---';
+        const daf = parsed.dafYomi?.he || '---';
+        let candleTime = '---';
+
+        if (parsed.items && Array.isArray(parsed.items)) {
+          const candle = parsed.items.find(item =>
+            item.title?.includes("הדלקת נרות") || item.he?.includes("הדלקת נרות")
+          );
+          if (candle && candle.date) {
+            candleTime = new Date(candle.date).toLocaleTimeString("he-IL", {
+              hour: '2-digit', minute: '2-digit'
+            });
+          }
+        }
+
+        calendarInfoEl.innerHTML = `
+          <div class="text-xl space-y-1">
+            📖 פרשת השבוע: ${parsha}<br>
+            📘 דף יומי: ${daf}<br>
+            🕯️🕯️ הדלקת נרות: ${candleTime}
+          </div>
+        `;
+      } catch (e) {
+        console.error("Calendar API error:", e);
+        calendarInfoEl.innerHTML = "";
       }
     }
 
-    calendarInfoEl.innerHTML = `
-      <div class="text-xl space-y-1">
-        📖 פרשת השבוע: ${parsha}<br>
-        📘 דף יומי: ${daf}<br>
-        🕯️🕯️ הדלקת נרות: ${candleTime}
-      </div>
-    `;
-  } catch (e) {
-    console.error("Calendar API error:", e);
-    calendarInfoEl.innerHTML = `<div class="text-xl">שגיאה בטעינת נתוני לוח השנה</div>`;
-  }
-}
+    async function fetchLocation() {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      return { lat: data.latitude, lon: data.longitude };
+    }
+
+    async function startClock() {
+      updateClockDisplay();
+      updateHebrewDate();
+      await fetchCalendarInfo();
+
+      const now = new Date();
+      const today = now.toISOString().split("T")[0];
+      const { lat, lon } = await fetchLocation();
+
+      const options = {
+        date: today,
+        timeZoneId: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        locationName: "Local",
+        latitude: lat,
+        longitude: lon,
+        elevation: 0,
+        complexZmanim: true
+      };
+
+      const zmanim = KosherZmanim.getZmanimJson(options).Zmanim;
+      const isShabbos = new Date().getDay() === 6;
+
+      let zmanimList = [
+        { name: "סוף זמן קריאת שמע (מ\"א)", time: new Date(zmanim.SofZmanShmaMGA) },
+        { name: "סוף זמן תפילה (מ\"א)", time: new Date(zmanim.SofZmanTfilaMGA) },
+        { name: "עלות השחר", time: new Date(zmanim.Alos72) },
+        { name: "משיכיר", time: new Date(zmanim.Misheyakir10Point2Degrees) },
+        { name: "הנץ החמה", time: new Date(zmanim.Sunrise) },
+        { name: "סוף זמן קריאת שמע", time: new Date(zmanim.SofZmanShmaGRA) },
+        { name: "סוף זמן תפילה", time: new Date(zmanim.SofZmanTfilaGRA) },
+        { name: "חצות היום", time: new Date(zmanim.Chatzos) },
+        { name: "מנחה גדולה", time: new Date(zmanim.MinchaGedola) },
+        { name: "מנחה קטנה", time: new Date(zmanim.MinchaKetana) },
+        { name: "פלג המנחה", time: new Date(zmanim.PlagHamincha) },
+        { name: "שקיעה", time: new Date(zmanim.Sunset) },
+        { name: "צאת הכוכבים", time: new Date(zmanim.Tzais) }
+      ];
+
+      if (!isShabbos) {
+        const netz = new Date(zmanim.Sunrise);
+        const offsets = {
+          "ברכות": -27,
+          "ישתבח": -8
+        };
+        const custom = Object.entries(offsets).map(([name, offset]) => {
+          return { name, time: new Date(netz.getTime() + offset * 60000) };
+        });
+        const timeMap = Object.fromEntries(custom.map(z => [z.name, z.time]));
+        const rYishmael = new Date(timeMap["ברכות"].getTime() + 8 * 60 * 1000);
+        const kriatShema = new Date(timeMap["ישתבח"].getTime() + 3.5 * 60 * 1000);
+        const emes = new Date(kriatShema.getTime() + 2.5 * 60 * 1000);
+
+        const weekdayZmanim = [
+          { name: "ברכות", time: timeMap["ברכות"] },
+          { name: "רבי ישמעל", time: rYishmael },
+          { name: "ישתבח", time: timeMap["ישתבח"] },
+          { name: "קריעת שמע", time: kriatShema },
+          { name: "אמת", time: emes }
+        ];
+
+        zmanimList.push(...weekdayZmanim);
+      }
+
+      zmanimList = zmanimList.filter(z => z.time instanceof Date && !isNaN(z.time));
+      zmanimList.sort((a, b) => a.time - b.time);
+
+      function highlightNextZman() {
+        const now = new Date();
+        zmanListEl.innerHTML = "";
+        labelEl.dataset.found = "";
+        let soonest = null;
+
+        for (const { name, time } of zmanimList) {
+          const div = document.createElement("div");
+          div.className = "bg-gray-700 p-4 rounded-xl shadow text-xl flex justify-between items-center";
+          div.innerHTML = `<span class='font-semibold'>${name}</span><span>${formatTime(time)}</span>`;
+          zmanListEl.appendChild(div);
+
+          if (!soonest && time > now) soonest = { name, time };
+        }
+
+        if (soonest) {
+          const diff = Math.floor((soonest.time - new Date()) / 1000);
+          labelEl.textContent = soonest.name;
+          timeEl.textContent = formatTime(soonest.time);
+          countdown.textContent = formatCountdown(diff);
+        } else {
+          labelEl.textContent = "אין זמני יום זמינים כרגע";
+        }
+      }
+
+      highlightNextZman();
+      setInterval(() => {
+        updateClockDisplay();
+        updateHebrewDate();
+        highlightNextZman();
+      }, 1000);
+    }
+
+    startClock();
+  </script>
+</body>
+</html>
