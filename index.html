@@ -6,14 +6,26 @@
   <title>זמני יום</title>
   <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
   <style>
     body {
       font-family: 'Varela Round', sans-serif;
+      transition: background 2s ease;
+    }
+    .night {
+      background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+    }
+    .sunrise {
+      background: linear-gradient(to top, #f3904f, #3b4371);
+    }
+    .day {
+      background: linear-gradient(to top, #2193b0, #6dd5ed);
+    }
+    .sunset {
+      background: linear-gradient(to top, #e96443, #904e95);
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 to-black text-white p-4 min-h-screen flex flex-col items-center">
+<body class="text-white p-4 min-h-screen flex flex-col items-center">
   <div class="text-center mt-6">
     <div id="clock" class="text-6xl font-bold mb-2">00:00:00</div>
     <div id="hebrewDate" class="text-lg text-gray-300 mb-8">תאריך עברי</div>
@@ -28,10 +40,6 @@
   <div id="zmanList" class="grid gap-4 w-full max-w-xl"></div>
 
   <script>
-    const zmanListEl = document.getElementById("zmanList");
-    const labelEl = document.getElementById("currentZmanLabel");
-    const timeEl = document.getElementById("currentZmanTime");
-    const countdown = document.getElementById("countdown");
     const clockEl = document.getElementById("clock");
     const hebrewDateEl = document.getElementById("hebrewDate");
 
@@ -42,13 +50,6 @@
         second: '2-digit',
         hour12: true
       }).replace(/[\u200e\s"׳״א-ת]+/g, '').trim();
-    }
-
-    function formatCountdown(seconds) {
-      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
-      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-      const s = String(seconds % 60).padStart(2, '0');
-      return `(${h}:${m}:${s})`;
     }
 
     function updateClockDisplay() {
@@ -67,113 +68,20 @@
       hebrewDateEl.textContent = formatter.format(now);
     }
 
-    async function fetchLocation() {
-      const res = await fetch("https://ipapi.co/json/");
-      const data = await res.json();
-      return { lat: data.latitude, lon: data.longitude };
+    const phases = ['night', 'sunrise', 'day', 'sunset'];
+    let phaseIndex = 0;
+    function cycleDemoBackground() {
+      document.body.className = phases[phaseIndex];
+      phaseIndex = (phaseIndex + 1) % phases.length;
     }
 
-    async function startClock() {
+    setInterval(() => {
       updateClockDisplay();
       updateHebrewDate();
+    }, 1000);
 
-      const now = new Date();
-      const isShabbos = now.getDay() === 6;
-      const { lat, lon } = await fetchLocation();
-
-      const options = {
-        date: now.toISOString().split('T')[0],
-        timeZoneId: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        locationName: "Your Location",
-        latitude: lat,
-        longitude: lon,
-        elevation: 0,
-        complexZmanim: true,
-      };
-
-      const zmanim = KosherZmanim.getZmanimJson(options).Zmanim;
-
-      const baseZmanim = [
-        { name: "עלות השחר", time: new Date(zmanim.Alos72) },
-        { name: "הנץ החמה", time: new Date(zmanim.Sunrise) },
-        { name: "סוף זמן קריאת שמע", time: new Date(zmanim.SofZmanShmaGRA) },
-        { name: "סוף זמן תפילה", time: new Date(zmanim.SofZmanTfilaGRA) },
-        { name: "חצות היום", time: new Date(zmanim.Chatzos) },
-        { name: "מנחה גדולה", time: new Date(zmanim.MinchaGedola) },
-        { name: "מנחה קטנה", time: new Date(zmanim.MinchaKetana) },
-        { name: "פלג המנחה", time: new Date(zmanim.PlagHamincha) },
-        { name: "שקיעה", time: new Date(zmanim.Sunset) },
-        { name: "צאת הכוכבים", time: new Date(zmanim.Tzais) },
-      ];
-
-      let zmanimList = [...baseZmanim];
-
-      if (!isShabbos) {
-        const netz = new Date(zmanim.Sunrise);
-        const offsets = {
-          "משיכיר": -51,
-          "ברכות": -27,
-          "ישתבח": -8,
-          "הנץ שמו\"ע": 0
-        };
-        const custom = Object.entries(offsets).map(([name, offset]) => {
-          return { name, time: new Date(netz.getTime() + offset * 60000) };
-        });
-
-        const timeMap = Object.fromEntries(custom.map(z => [z.name, z.time]));
-        const rYishmael = new Date(timeMap["ברכות"].getTime() + 8 * 60 * 1000);
-        const kriatShema = new Date(timeMap["ישתבח"].getTime() + 3.5 * 60 * 1000);
-        const emes = new Date(kriatShema.getTime() + 2.5 * 60 * 1000);
-
-        zmanimList = [
-          { name: "עלות השחר", time: new Date(zmanim.Alos72) },
-          { name: "משיכיר", time: timeMap["משיכיר"] },
-          { name: "ברכות", time: timeMap["ברכות"] },
-          { name: "רבי ישמעל", time: rYishmael },
-          { name: "ישתבח", time: timeMap["ישתבח"] },
-          { name: "קריעת שמע", time: kriatShema },
-          { name: "אמת", time: emes },
-          { name: "הנץ שמו\"ע", time: timeMap["הנץ שמו\"ע"] },
-        ];
-      }
-
-      function highlightNextZman() {
-        const now = new Date();
-        zmanListEl.innerHTML = "";
-        labelEl.dataset.found = "";
-
-        for (let i = 0; i < zmanimList.length; i++) {
-          const { name, time } = zmanimList[i];
-          const card = document.createElement("div");
-          card.className = "bg-gray-700 p-4 rounded-xl shadow text-xl flex justify-between items-center";
-          card.innerHTML = `<span class='font-semibold'>${name}</span><span>${formatTime(time)}</span>`;
-          zmanListEl.appendChild(card);
-
-          if (time > now && !labelEl.dataset.found) {
-            const diff = Math.floor((time - now) / 1000);
-            labelEl.textContent = name;
-            labelEl.dataset.found = "true";
-            timeEl.textContent = formatTime(time);
-            countdown.textContent = formatCountdown(diff);
-          }
-        }
-
-        if (!labelEl.dataset.found) {
-          labelEl.textContent = "מעדכן...";
-          timeEl.textContent = "--:--";
-          countdown.textContent = "(00:00:00)";
-        }
-      }
-
-      highlightNextZman();
-      setInterval(() => {
-        updateClockDisplay();
-        updateHebrewDate();
-        highlightNextZman();
-      }, 1000);
-    }
-
-    startClock();
+    setInterval(cycleDemoBackground, 15000);
+    window.onload = cycleDemoBackground;
   </script>
 </body>
 </html>
