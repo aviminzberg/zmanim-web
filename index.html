@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>זמני יום</title>
   <style>
     body {
       margin: 0;
-      background-color: #111;
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -21,7 +21,8 @@
     #clock {
       font-size: 6rem;
       font-weight: bold;
-      margin: 10px 0 40px;
+      margin-top: 10px;
+      margin-bottom: 40px;
       text-align: center;
     }
 
@@ -34,103 +35,174 @@
     .zman-time-display {
       font-size: 3rem;
       font-weight: bold;
-      margin-top: 10px;
     }
 
     .zman-countdown {
       font-size: 2rem;
-      color: #0f0;
-      margin-top: 20px;
+      font-weight: bold;
+      color: #aaa;
+    }
+
+    .zman-list {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
   </style>
 </head>
 <body>
-
-  <div id="clock">00:00:00</div>
-
+  <div id="clock">00:00</div>
   <div class="zman-section">
-    זמן הבא: <div id="next-zman-name">נץ החמה</div>
-    <div class="zman-time-display" id="next-zman-time">06:02</div>
-    <div class="zman-countdown" id="countdown">00:00:00</div>
+    <div id="currentZmanLabel">טוען...</div>
+    <div id="currentZmanTime" class="zman-time-display">00:00</div>
+    <div id="countdown" class="zman-countdown">(00:00)</div>
   </div>
-
-  <div class="zman-section">
-    זמני היום:
-    <ul id="zmanim-list" style="list-style: none; padding: 0; font-size: 1.5rem;">
-      <li>עלות השחר: <span id="alos">05:00</span></li>
-      <li>נץ החמה: <span id="netz">06:02</span></li>
-      <li>חצות היום: <span id="chatzos">12:42</span></li>
-      <li>מנחה גדולה: <span id="mincha-gedola">13:15</span></li>
-      <li>שקיעה: <span id="shkia">19:45</span></li>
-      <li>צאת הכוכבים: <span id="tzeis">20:10</span></li>
-    </ul>
-  </div>
+  <div class="zman-list" id="zmanList"></div>
 
   <script>
-    // Live clock
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').textContent =
-        now.toLocaleTimeString('he-IL', { hour12: false });
+    const weekdayOffsets = {
+      "עלות השחר": -72,
+      "משיכיר": -51,
+      "ברכות": -27,
+      "ישתבח": -8,
+      "הנץ שמו\"ע": 0
+    };
+
+    const shabbosOffsets = {
+      "עלות השחר": -72,
+      "משיכיר": -50,
+      "ברכות": -45,
+      "רבי ישמעל": -37,
+      "ישתבח": -14,
+      "הנץ שמו\"ע": 0
+    };
+
+    const zmanListEl = document.getElementById("zmanList");
+    const labelEl = document.getElementById("currentZmanLabel");
+    const timeEl = document.getElementById("currentZmanTime");
+    const countdown = document.getElementById("countdown");
+    const clockEl = document.getElementById("clock");
+
+    function formatTime(date) {
+  return date.toLocaleTimeString("he-IL", {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+}
+});
     }
-    setInterval(updateClock, 1000);
-    updateClock();
 
-    // Sample zmanim (replace with real times if loading from API/KosherJava)
-    const zmanim = [
-      { name: 'עלות השחר', time: '05:00' },
-      { name: 'נץ החמה', time: '06:02' },
-      { name: 'חצות היום', time: '12:42' },
-      { name: 'מנחה גדולה', time: '13:15' },
-      { name: 'שקיעה', time: '19:45' },
-      { name: 'צאת הכוכבים', time: '20:10' },
-    ];
+    function formatCountdown(seconds) {
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      return `(${m}:${s})`;
+    }
 
-    // Countdown logic
-    function updateCountdown() {
+    function updateClockDisplay() {
       const now = new Date();
-      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      clockEl.textContent = formatTime(now);
+    }
 
-      // Find next zman
-      let nextZman = null;
-      for (let i = 0; i < zmanim.length; i++) {
-        const [hour, minute] = zmanim[i].time.split(':').map(Number);
-        const zmanMinutes = hour * 60 + minute;
-        if (zmanMinutes > nowMinutes) {
-          nextZman = zmanim[i];
-          break;
+    function highlightNextZman(zmanim) {
+  const now = new Date();
+  zmanListEl.innerHTML = "";
+  for (let i = 0; i < zmanim.length; i++) {
+    const [name, time] = zmanim[i];
+    const zmanDiv = document.createElement("div");
+    zmanDiv.className = "zman";
+    zmanDiv.innerHTML = `<div><strong>${name}</strong></div><div>${formatTime(time)}</div>`;
+    zmanListEl.appendChild(zmanDiv);
+
+    if (time > now && !labelEl.dataset.found) {
+      const diff = Math.floor((time - now) / 1000);
+      labelEl.textContent = name;
+      labelEl.dataset.found = "true";
+      timeEl.textContent = formatTime(time);
+      countdown.textContent = formatCountdown(diff);
+      labelEl.dataset.found = "true";
+    }
+  }
+
+  if (!labelEl.dataset.found) {
+    labelEl.textContent = "מעדכן...";
+    labelEl.dataset.found = "";
+    timeEl.textContent = "--:--";
+    countdown.textContent = "(00:00)";
+    startClockTomorrow();
+  }
+}
+
+    async function fetchLocation() {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      return { lat: data.latitude, lon: data.longitude };
+    }
+
+    async function fetchAlot(lat, lon, dateStr) {
+      const url = `https://www.hebcal.com/zmanim?cfg=json&latitude=${lat}&longitude=${lon}&date=${dateStr}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return new Date(data.times.alotHaShachar);
+    }
+
+    async function startClock() {
+      const now = new Date();
+      const today = now.toISOString().split("T")[0];
+      const isShabbos = now.getDay() === 6;
+      const offsets = isShabbos ? shabbosOffsets : weekdayOffsets;
+      const { lat, lon } = await fetchLocation();
+      const alos = await fetchAlot(lat, lon, today);
+      const netz = new Date(alos.getTime() + 72 * 60000);
+      let zmanim = Object.entries(offsets).map(([name, offset]) => {
+        const t = new Date(netz.getTime() + offset * 60000);
+        return [name, t];
+      });
+
+      if (!isShabbos) {
+        const timeMap = Object.fromEntries(zmanim);
+        const berachos = timeMap["ברכות"];
+        const yishtabach = timeMap["ישתבח"];
+        const rYishmael = new Date(berachos.getTime() + 8 * 60 * 1000);
+        const kriatShema = new Date(yishtabach.getTime() + 3.5 * 60 * 1000);
+        const emes = new Date(kriatShema.getTime() + 2.5 * 60 * 1000);
+        zmanim.splice(3, 0, ["רבי ישמעל", rYishmael]);
+        zmanim.splice(5, 0, ["קריעת שמע", kriatShema]);
+        zmanim.splice(6, 0, ["אמת", emes]);
+      }
+
+      highlightNextZman(zmanim);
+      setInterval(() => {
+        updateClockDisplay();
+        highlightNextZman(zmanim);
+      }, 1000);
+    }
+
+    async function startClockTomorrow() {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      const tomorrowDate = tomorrow.toISOString().split("T")[0];
+      const { lat, lon } = await fetchLocation();
+      const alosTomorrow = await fetchAlot(lat, lon, tomorrowDate);
+      const interval = setInterval(() => {
+        const now2 = new Date();
+        updateClockDisplay();
+        const diff = Math.floor((alosTomorrow - now2) / 1000);
+        if (diff <= 0) {
+          clearInterval(interval);
+          startClock();
+        } else {
+          labelEl.textContent = "עלות השחר (מחר)";
+          timeEl.textContent = formatTime(alosTomorrow);
+          countdown.textContent = formatCountdown(diff);
         }
-      }
-
-      // If no zman is left, show tomorrow's first
-      if (!nextZman) {
-        nextZman = zmanim[0];
-      }
-
-      // Display name and time
-      document.getElementById('next-zman-name').textContent = nextZman.name;
-      document.getElementById('next-zman-time').textContent = nextZman.time;
-
-      // Calculate countdown
-      const [nextHour, nextMin] = nextZman.time.split(':').map(Number);
-      const nextTime = new Date(now);
-      nextTime.setHours(nextHour, nextMin, 0, 0);
-
-      if (nextTime < now) {
-        nextTime.setDate(now.getDate() + 1);
-      }
-
-      const diff = Math.floor((nextTime - now) / 1000);
-      const hours = String(Math.floor(diff / 3600)).padStart(2, '0');
-      const minutes = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-      const seconds = String(diff % 60).padStart(2, '0');
-
-      document.getElementById('countdown').textContent = `${hours}:${minutes}:${seconds}`;
+      }, 1000);
     }
 
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+    startClock();
   </script>
-
 </body>
 </html>
