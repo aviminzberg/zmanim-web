@@ -16,7 +16,7 @@
   </style>
 </head>
 <body class="text-white p-4 min-h-screen flex flex-col items-center">
-  <div id="calendarInfo" class="text-center text-lg mb-4">טוען נתוני לוח שנה...</div>
+  <div id="calendarInfo" class="text-center text-lg mb-4"></div>
   <div class="text-center mt-2">
     <div id="clock" class="text-7xl font-extrabold mb-4 tracking-wide text-white drop-shadow-lg">00:00:00</div>
     <div id="hebrewDate" class="text-lg text-gray-300 mb-8">תאריך עברי</div>
@@ -37,17 +37,18 @@
     const hebrewDateEl = document.getElementById("hebrewDate");
     const calendarInfoEl = document.getElementById("calendarInfo");
 
+    let globalCandleTime = null;
+
     function formatTime(date) {
       let time = date.toLocaleTimeString("he-IL", {
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit',
         hour12: true
       });
       time = time.replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
-      let [h, m, s] = time.split(":");
+      let [h, m] = time.split(":");
       if (h.startsWith("0")) h = h.slice(1);
-      return `${h}:${m}:${s}`;
+      return `${h}:${m}`;
     }
 
     function formatCountdown(seconds) {
@@ -60,7 +61,11 @@
 
     function updateClockDisplay() {
       const now = new Date();
-      clockEl.textContent = formatTime(now);
+      clockEl.textContent = now.toLocaleTimeString("he-IL", {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
     }
 
     async function updateHebrewDate() {
@@ -75,38 +80,6 @@
       }
     }
 
-    async function fetchCalendarInfo() {
-      try {
-        const res = await fetch("https://corsproxy.io/?https://www.sefaria.org/api/calendar");
-        const parsed = await res.json();
-        const parsha = parsed.parashat || '---';
-        const daf = parsed.dafYomi?.he || '---';
-        let candleTime = '---';
-
-        if (parsed.items && Array.isArray(parsed.items)) {
-          const candle = parsed.items.find(item =>
-            item.title?.includes("הדלקת נרות") || item.he?.includes("הדלקת נרות")
-          );
-          if (candle && candle.date) {
-            candleTime = new Date(candle.date).toLocaleTimeString("he-IL", {
-              hour: '2-digit', minute: '2-digit'
-            });
-          }
-        }
-
-        calendarInfoEl.innerHTML = `
-          <div class="text-xl space-y-1">
-            📖 פרשת השבוע: ${parsha}<br>
-            📘 דף יומי: ${daf}<br>
-            🕯️🕯️ הדלקת נרות: ${candleTime}
-          </div>
-        `;
-      } catch (e) {
-        console.error("Calendar API error:", e);
-        calendarInfoEl.innerHTML = "";
-      }
-    }
-
     async function fetchLocation() {
       const res = await fetch("https://ipapi.co/json/");
       const data = await res.json();
@@ -116,14 +89,12 @@
     async function startClock() {
       updateClockDisplay();
       await updateHebrewDate();
-      await fetchCalendarInfo();
 
       const now = new Date();
-      const today = now.toISOString().split("T")[0];
       const { lat, lon } = await fetchLocation();
 
       const options = {
-        date: today,
+        date: now.toISOString().split("T")[0],
         timeZoneId: Intl.DateTimeFormat().resolvedOptions().timeZone,
         locationName: "Local",
         latitude: lat,
@@ -133,7 +104,7 @@
       };
 
       const zmanim = KosherZmanim.getZmanimJson(options).Zmanim;
-      const isShabbos = new Date().getDay() === 6;
+      const isShabbos = now.getDay() === 6;
 
       let zmanimList = [
         { name: "סוף זמן קריאת שמע (מ\"א)", time: new Date(zmanim.SofZmanShmaMGA) },
@@ -153,27 +124,37 @@
 
       if (!isShabbos) {
         const netz = new Date(zmanim.Sunrise);
-        const offsets = {
-          "ברכות": -27,
-          "ישתבח": -8
-        };
-        const custom = Object.entries(offsets).map(([name, offset]) => {
-          return { name, time: new Date(netz.getTime() + offset * 60000) };
-        });
+        const offsets = { "ברכות": -27, "ישתבח": -8 };
+        const custom = Object.entries(offsets).map(([name, offset]) => ({
+          name,
+          time: new Date(netz.getTime() + offset * 60000)
+        }));
         const timeMap = Object.fromEntries(custom.map(z => [z.name, z.time]));
-        const rYishmael = new Date(timeMap["ברכות"].getTime() + 8 * 60 * 1000);
-        const kriatShema = new Date(timeMap["ישתבח"].getTime() + 3.5 * 60 * 1000);
-        const emes = new Date(kriatShema.getTime() + 2.5 * 60 * 1000);
-
-        const weekdayZmanim = [
-          { name: "ברכות", time: timeMap["ברכות"] },
+        const rYishmael = new Date(timeMap["ברכות"].getTime() + 8 * 60000);
+        const kriatShema = new Date(timeMap["ישתבח"].getTime() + 3.5 * 60000);
+        const emes = new Date(kriatShema.getTime() + 2.5 * 60000);
+        zmanimList.push(
+          ...custom,
           { name: "רבי ישמעאל", time: rYishmael },
-          { name: "ישתבח", time: timeMap["ישתבח"] },
           { name: "קריאת שמע", time: kriatShema },
           { name: "אמת", time: emes }
-        ];
+        );
+      }
 
-        zmanimList.push(...weekdayZmanim);
+      if (now.getDay() === 5 && zmanim.Sunset) {
+        const candleLightingTime = new Date(new Date(zmanim.Sunset).getTime() - 18 * 60000);
+        globalCandleTime = candleLightingTime;
+        zmanimList.push({ name: "הדלקת נרות", time: candleLightingTime });
+
+        const formatted = candleLightingTime.toLocaleTimeString("he-IL", {
+          hour: '2-digit', minute: '2-digit', hour12: true
+        }).replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
+
+        calendarInfoEl.innerHTML += `
+          <div class="text-xl text-yellow-300 font-semibold animate-pulse">
+            🕯️ הדלקת נרות: ${formatted}
+          </div>
+        `;
       }
 
       zmanimList = zmanimList.filter(z => z.time instanceof Date && !isNaN(z.time));
@@ -191,18 +172,14 @@
           const isAfterChatzos = chatzosTime && now > chatzosTime;
           const isNext = !soonest && time > now;
 
-          // ⛔ Skip rendering passed zmanim until after חצות
-          if (isPast && !isAfterChatzos) continue;
+          if (isPast && !isAfterChatzos && name !== "הדלקת נרות") continue;
 
           const div = document.createElement("div");
           div.className = `transition-all duration-700 text-xl flex justify-between items-center rounded-xl shadow ${
             isNext ? 'bg-yellow-500 text-black font-bold' : 'bg-gray-700'
           }`;
-
-          div.style.opacity = "1";
           div.style.padding = "1rem";
           div.style.marginBottom = "1rem";
-
           div.innerHTML = `<span class='font-semibold'>${name}</span><span>${formatTime(time)}</span>`;
           zmanListEl.appendChild(div);
 
