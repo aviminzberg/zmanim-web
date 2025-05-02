@@ -22,8 +22,14 @@
       font-size: 6rem;
       font-weight: bold;
       margin-top: 10px;
-      margin-bottom: 40px;
+      margin-bottom: 10px;
       text-align: center;
+    }
+
+    #hebrewDate {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+      color: #ccc;
     }
 
     .zman-section {
@@ -54,11 +60,14 @@
 </head>
 <body>
   <div id="clock">00:00</div>
+  <div id="hebrewDate">תאריך עברי</div>
+
   <div class="zman-section">
     <div id="currentZmanLabel">טוען...</div>
     <div id="currentZmanTime" class="zman-time-display">00:00</div>
     <div id="countdown" class="zman-countdown">(00:00)</div>
   </div>
+
   <div class="zman-list" id="zmanList"></div>
 
   <script>
@@ -84,21 +93,22 @@
     const timeEl = document.getElementById("currentZmanTime");
     const countdown = document.getElementById("countdown");
     const clockEl = document.getElementById("clock");
+    const hebrewDateEl = document.getElementById("hebrewDate");
 
-    function formatTime(date) {
-  return date.toLocaleTimeString("he-IL", {
-    hour: 'numeric',
+   function formatTime(date) {
+  let time = date.toLocaleTimeString("he-IL", {
+    hour: '2-digit',
     minute: '2-digit',
     hour12: true
   });
+  return time.replace(/[\u200e\s"׳״א-ת]+/g, '').trim();
 }
-});
-    }
 
     function formatCountdown(seconds) {
-      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
       const s = String(seconds % 60).padStart(2, '0');
-      return `(${m}:${s})`;
+      return `(${h}:${m}:${s})`;
     }
 
     function updateClockDisplay() {
@@ -106,34 +116,45 @@
       clockEl.textContent = formatTime(now);
     }
 
-    function highlightNextZman(zmanim) {
-  const now = new Date();
-  zmanListEl.innerHTML = "";
-  for (let i = 0; i < zmanim.length; i++) {
-    const [name, time] = zmanim[i];
-    const zmanDiv = document.createElement("div");
-    zmanDiv.className = "zman";
-    zmanDiv.innerHTML = `<div><strong>${name}</strong></div><div>${formatTime(time)}</div>`;
-    zmanListEl.appendChild(zmanDiv);
-
-    if (time > now && !labelEl.dataset.found) {
-      const diff = Math.floor((time - now) / 1000);
-      labelEl.textContent = name;
-      labelEl.dataset.found = "true";
-      timeEl.textContent = formatTime(time);
-      countdown.textContent = formatCountdown(diff);
-      labelEl.dataset.found = "true";
+    function updateHebrewDate() {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      hebrewDateEl.textContent = formatter.format(now);
     }
-  }
 
-  if (!labelEl.dataset.found) {
-    labelEl.textContent = "מעדכן...";
-    labelEl.dataset.found = "";
-    timeEl.textContent = "--:--";
-    countdown.textContent = "(00:00)";
-    startClockTomorrow();
-  }
-}
+    function highlightNextZman(zmanim) {
+      const now = new Date();
+      zmanListEl.innerHTML = "";
+      labelEl.dataset.found = "";
+
+      for (let i = 0; i < zmanim.length; i++) {
+        const [name, time] = zmanim[i];
+        const zmanDiv = document.createElement("div");
+        zmanDiv.className = "zman";
+        zmanDiv.innerHTML = `<div><strong>${name}</strong></div><div>${formatTime(time)}</div>`;
+        zmanListEl.appendChild(zmanDiv);
+
+        if (time > now && !labelEl.dataset.found) {
+          const diff = Math.floor((time - now) / 1000);
+          labelEl.textContent = name;
+          labelEl.dataset.found = "true";
+          timeEl.textContent = formatTime(time);
+          countdown.textContent = formatCountdown(diff);
+        }
+      }
+
+      if (!labelEl.dataset.found) {
+        labelEl.textContent = "מעדכן...";
+        timeEl.textContent = "--:--";
+        countdown.textContent = "(00:00:00)";
+        startClockTomorrow();
+      }
+    }
 
     async function fetchLocation() {
       const res = await fetch("https://ipapi.co/json/");
@@ -149,6 +170,9 @@
     }
 
     async function startClock() {
+      updateClockDisplay();
+      updateHebrewDate();
+
       const now = new Date();
       const today = now.toISOString().split("T")[0];
       const isShabbos = now.getDay() === 6;
@@ -156,6 +180,7 @@
       const { lat, lon } = await fetchLocation();
       const alos = await fetchAlot(lat, lon, today);
       const netz = new Date(alos.getTime() + 72 * 60000);
+
       let zmanim = Object.entries(offsets).map(([name, offset]) => {
         const t = new Date(netz.getTime() + offset * 60000);
         return [name, t];
@@ -176,6 +201,7 @@
       highlightNextZman(zmanim);
       setInterval(() => {
         updateClockDisplay();
+        updateHebrewDate();
         highlightNextZman(zmanim);
       }, 1000);
     }
@@ -187,9 +213,11 @@
       const tomorrowDate = tomorrow.toISOString().split("T")[0];
       const { lat, lon } = await fetchLocation();
       const alosTomorrow = await fetchAlot(lat, lon, tomorrowDate);
+
       const interval = setInterval(() => {
         const now2 = new Date();
         updateClockDisplay();
+        updateHebrewDate();
         const diff = Math.floor((alosTomorrow - now2) / 1000);
         if (diff <= 0) {
           clearInterval(interval);
