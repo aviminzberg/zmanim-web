@@ -16,20 +16,16 @@
 </head>
 <body class="text-white p-4 min-h-screen flex flex-col items-center">
   <div id="calendarInfo" class="text-center text-lg mb-4"></div>
-
   <div class="text-center mt-2">
     <div id="clock" class="text-6xl font-bold mb-2">00:00:00</div>
     <div id="hebrewDate" class="text-lg text-gray-300 mb-8">תאריך עברי</div>
   </div>
-
   <div class="bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-xl mb-8 text-center">
     <div id="currentZmanLabel" class="text-2xl font-semibold">טוען...</div>
     <div id="currentZmanTime" class="text-4xl font-bold my-2">00:00:00</div>
     <div id="countdown" class="text-2xl text-green-400 font-bold">(00:00:00)</div>
   </div>
-
   <div id="zmanList" class="grid gap-4 w-full max-w-xl"></div>
-
   <script>
     const zmanListEl = document.getElementById("zmanList");
     const labelEl = document.getElementById("currentZmanLabel");
@@ -70,17 +66,17 @@
 
     async function fetchCalendarInfo() {
       try {
-        const res = await fetch('https://www.sefaria.org/api/calendar');
-        const data = await res.json();
-        const parsha = data.parashat || '---';
-        const daf = (data.dafYomi && data.dafYomi.he) || '---';
+        const res = await fetch("https://corsproxy.io/?https://www.sefaria.org/api/calendar");
+        const parsed = await res.json();
+        const parsha = parsed.parashat || '---';
+        const daf = parsed.dafYomi?.he || '---';
         calendarInfoEl.innerHTML = `
           <div class="text-xl">
             📖 פרשת השבוע: ${parsha}<br>
             📘 דף יומי: ${daf}
           </div>
         `;
-      } catch {
+      } catch (e) {
         calendarInfoEl.innerHTML = `<div class="text-xl">שגיאה בטעינת נתוני לוח השנה</div>`;
       }
     }
