@@ -9,19 +9,7 @@
   <style>
     body {
       font-family: 'Varela Round', sans-serif;
-      transition: background 2s ease;
-    }
-    .night {
-      background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
-    }
-    .sunrise {
-      background: linear-gradient(to top, #f3904f, #3b4371);
-    }
-    .day {
-      background: linear-gradient(to top, #2193b0, #6dd5ed);
-    }
-    .sunset {
-      background: linear-gradient(to top, #e96443, #904e95);
+      background-color: #111827;
     }
   </style>
 </head>
@@ -68,20 +56,10 @@
       hebrewDateEl.textContent = formatter.format(now);
     }
 
-    const phases = ['night', 'sunrise', 'day', 'sunset'];
-    let phaseIndex = 0;
-    function cycleDemoBackground() {
-      document.body.className = phases[phaseIndex];
-      phaseIndex = (phaseIndex + 1) % phases.length;
-    }
-
     setInterval(() => {
       updateClockDisplay();
       updateHebrewDate();
     }, 1000);
-
-    setInterval(cycleDemoBackground, 15000);
-    window.onload = cycleDemoBackground;
   </script>
 </body>
 </html>
