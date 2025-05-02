@@ -2,73 +2,29 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>זמני יום</title>
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
-      margin: 0;
-      background: #111;
-      color: white;
-      font-family: "Segoe UI", sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      padding: 40px 20px;
-      font-size: 1.5rem;
-    }
-
-    #clock {
-      font-size: 6rem;
-      font-weight: bold;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    #hebrewDate {
-      font-size: 1.5rem;
-      margin-bottom: 30px;
-      color: #ccc;
-    }
-
-    .zman-section {
-      font-size: 2rem;
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .zman-time-display {
-      font-size: 3rem;
-      font-weight: bold;
-    }
-
-    .zman-countdown {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #aaa;
-    }
-
-    .zman-list {
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      font-family: 'Varela Round', sans-serif;
     }
   </style>
 </head>
-<body>
-  <div id="clock">00:00</div>
-  <div id="hebrewDate">תאריך עברי</div>
-
-  <div class="zman-section">
-    <div id="currentZmanLabel">טוען...</div>
-    <div id="currentZmanTime" class="zman-time-display">00:00</div>
-    <div id="countdown" class="zman-countdown">(00:00)</div>
+<body class="bg-gradient-to-br from-gray-900 to-black text-white p-4 min-h-screen flex flex-col items-center">
+  <div class="text-center mt-6">
+    <div id="clock" class="text-6xl font-bold mb-2">00:00:00</div>
+    <div id="hebrewDate" class="text-lg text-gray-300 mb-8">תאריך עברי</div>
   </div>
 
-  <div class="zman-list" id="zmanList"></div>
+  <div class="bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-xl mb-8 text-center">
+    <div id="currentZmanLabel" class="text-2xl font-semibold">טוען...</div>
+    <div id="currentZmanTime" class="text-4xl font-bold my-2">00:00:00</div>
+    <div id="countdown" class="text-2xl text-green-400 font-bold">(00:00:00)</div>
+  </div>
+
+  <div id="zmanList" class="grid gap-4 w-full max-w-xl"></div>
 
   <script>
     const weekdayOffsets = {
@@ -95,14 +51,15 @@
     const clockEl = document.getElementById("clock");
     const hebrewDateEl = document.getElementById("hebrewDate");
 
-   function formatTime(date) {
-  let time = date.toLocaleTimeString("he-IL", {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
-  return time.replace(/[\u200e\s"׳״א-ת]+/g, '').trim();
-}
+    function formatTime(date) {
+      let time = date.toLocaleTimeString("he-IL", {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      return time.replace(/[‎\s"׳״א-ת]+/g, '').trim();
+    }
 
     function formatCountdown(seconds) {
       const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
@@ -134,10 +91,10 @@
 
       for (let i = 0; i < zmanim.length; i++) {
         const [name, time] = zmanim[i];
-        const zmanDiv = document.createElement("div");
-        zmanDiv.className = "zman";
-        zmanDiv.innerHTML = `<div><strong>${name}</strong></div><div>${formatTime(time)}</div>`;
-        zmanListEl.appendChild(zmanDiv);
+        const card = document.createElement("div");
+        card.className = "bg-gray-700 p-4 rounded-xl shadow text-xl flex justify-between items-center";
+        card.innerHTML = `<span class='font-semibold'>${name}</span><span>${formatTime(time)}</span>`;
+        zmanListEl.appendChild(card);
 
         if (time > now && !labelEl.dataset.found) {
           const diff = Math.floor((time - now) / 1000);
