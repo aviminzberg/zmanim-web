@@ -15,17 +15,17 @@
       justify-content: flex-start;
       height: 100vh;
       padding: 40px 20px;
-      font-size: 1.25rem;
+      font-size: 1.5rem;
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 3rem;
       margin: 10px;
       color: #4da6ff;
     }
 
     #countdown {
-      font-size: 6rem;
+      font-size: 7rem;
       font-weight: bold;
       margin-bottom: 30px;
       text-align: center;
@@ -33,20 +33,20 @@
 
     .zman-list {
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 20px;
     }
 
     .zman {
       background: #222;
       border-radius: 15px;
-      padding: 20px 25px;
+      padding: 25px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     .zman.highlight {
@@ -62,12 +62,12 @@
 
     .zman-name {
       font-weight: bold;
-      font-size: 1.4rem;
+      font-size: 1.6rem;
     }
 
     .zman-time {
       font-family: monospace;
-      font-size: 1.4rem;
+      font-size: 1.6rem;
     }
   </style>
 </head>
@@ -81,9 +81,8 @@
       "עלות השחר": -72,
       "משיכיר": -51,
       "ברכות": -27,
-      "רבי ישמעל": -18,
       "ישתבח": -8,
-      "הנץ": 0
+      "הנץ שמו\"ע": 0
     };
 
     const shabbosOffsets = {
@@ -92,7 +91,7 @@
       "ברכות": -45,
       "רבי ישמעל": -37,
       "ישתבח": -14,
-      "הנץ": 0
+      "הנץ שמו\"ע": 0
     };
 
     const zmanListEl = document.getElementById("zmanList");
@@ -155,10 +154,24 @@
       const { lat, lon } = await fetchLocation();
       const alos = await fetchAlot(lat, lon, today);
       const netz = new Date(alos.getTime() + 72 * 60000);
-      const zmanim = Object.entries(offsets).map(([name, offset]) => {
+      let zmanim = Object.entries(offsets).map(([name, offset]) => {
         const t = new Date(netz.getTime() + offset * 60000);
         return [name, t];
       });
+
+      if (!isShabbos) {
+        const timeMap = Object.fromEntries(zmanim);
+        const berachos = timeMap["ברכות"];
+        const yishtabach = timeMap["ישתבח"];
+
+        const rYishmael = new Date(berachos.getTime() + 8 * 60 * 1000);
+        const kriatShema = new Date(yishtabach.getTime() + 3.5 * 60 * 1000);
+        const emes = new Date(kriatShema.getTime() + 2.5 * 60 * 1000);
+
+        zmanim.splice(3, 0, ["רבי ישמעל", rYishmael]);
+        zmanim.splice(5, 0, ["קריעת שמע", kriatShema]);
+        zmanim.splice(6, 0, ["אמת", emes]);
+      }
 
       renderZmanim(zmanim, isShabbos);
       highlightNextZman(zmanim);
