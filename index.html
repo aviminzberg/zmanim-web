@@ -12,52 +12,49 @@
       font-family: 'Varela Round', sans-serif;
       background-color: #111827;
       color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #wallClock {
+      text-align: center;
+      width: 6.55in;
+      height: 10.05in;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+    }
+
+    #clock {
+      font-size: 12vw;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 2px 2px #000000;
+    }
+
+    #countdownContainer {
+      font-size: 6vw;
+      color: #00ff00;
+      font-weight: bold;
     }
   </style>
 </head>
-<body class="text-white p-4 min-h-screen flex flex-col items-center">
-  <div id="calendarInfo" class="text-center text-lg mb-4"></div>
-  <div class="text-center mt-2">
-    <div id="clock" class="text-7xl font-extrabold mb-4 tracking-wide text-white drop-shadow-lg">00:00:00</div>
-    <div id="hebrewDate" class="text-lg text-gray-300 mb-8">תאריך עברי</div>
+<body>
+  <div id="wallClock">
+    <div id="clock">00:00:00</div>
+    <div id="countdownContainer">
+      <span id="currentZmanLabel">טוען...</span>
+      <span id="countdown">00:00</span>
+    </div>
   </div>
-  <div class="bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-xl mb-8 text-center">
-    <div id="currentZmanLabel" class="text-2xl font-semibold">טוען...</div>
-    <div id="currentZmanTime" class="text-4xl font-bold my-2">00:00:00</div>
-    <div id="countdown" class="text-2xl text-green-400 font-bold">00:00</div>
-  </div>
-  <div id="zmanList" class="grid gap-4 w-full max-w-xl bg-gray-900 bg-opacity-60 rounded-xl p-4 shadow-xl backdrop-blur"></div>
 
   <script>
-    const zmanListEl = document.getElementById("zmanList");
-    const labelEl = document.getElementById("currentZmanLabel");
-    const timeEl = document.getElementById("currentZmanTime");
-    const countdown = document.getElementById("countdown");
     const clockEl = document.getElementById("clock");
-    const hebrewDateEl = document.getElementById("hebrewDate");
-    const calendarInfoEl = document.getElementById("calendarInfo");
-
-    let globalCandleTime = null;
-
-    function formatTime(date) {
-      let time = date.toLocaleTimeString("he-IL", {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-      time = time.replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
-      let [h, m] = time.split(":");
-      if (h.startsWith("0")) h = h.slice(1);
-      return `${h}:${m}`;
-    }
-
-    function formatCountdown(seconds) {
-      let h = Math.floor(seconds / 3600);
-      let m = Math.floor((seconds % 3600) / 60);
-      let s = seconds % 60;
-      const pad = n => n < 10 ? '0' + n : n;
-      return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
-    }
+    const countdownEl = document.getElementById("countdown");
+    const labelEl = document.getElementById("currentZmanLabel");
 
     function updateClockDisplay() {
       const now = new Date();
@@ -68,140 +65,38 @@
       }).replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
     }
 
-    async function updateHebrewDate() {
-      try {
-        const now = new Date();
-        const res = await fetch(`https://www.hebcal.com/converter?cfg=json&gy=${now.getFullYear()}&gm=${now.getMonth() + 1}&gd=${now.getDate()}&g2h=1`);
-        const data = await res.json();
-        hebrewDateEl.textContent = data.hebrew;
-      } catch (e) {
-        console.error("Hebrew date error:", e);
-        hebrewDateEl.textContent = "שגיאה בתאריך";
-      }
+    function formatCountdown(seconds) {
+      let m = Math.floor(seconds / 60);
+      let s = seconds % 60;
+      const pad = n => n < 10 ? '0' + n : n;
+      return `${m}:${pad(s)}`;
     }
 
-    async function fetchLocation() {
-      const res = await fetch("https://ipapi.co/json/");
-      const data = await res.json();
-      return { lat: data.latitude, lon: data.longitude };
-    }
-
-    async function startClock() {
-      updateClockDisplay();
-      await updateHebrewDate();
-
-      const now = new Date();
-      const { lat, lon } = await fetchLocation();
-
-      const options = {
-        date: now.toISOString().split("T")[0],
-        timeZoneId: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        locationName: "Local",
-        latitude: lat,
-        longitude: lon,
-        elevation: 0,
-        complexZmanim: true
-      };
-
-      const zmanim = KosherZmanim.getZmanimJson(options).Zmanim;
-      const isShabbos = now.getDay() === 6;
-
-      let zmanimList = [
-        { name: "סוף זמן קריאת שמע (מ\"א)", time: new Date(zmanim.SofZmanShmaMGA) },
-        { name: "סוף זמן תפילה (מ\"א)", time: new Date(zmanim.SofZmanTfilaMGA) },
-        { name: "עלות השחר", time: new Date(zmanim.Alos72) },
-        { name: "משיכיר", time: new Date(zmanim.Misheyakir10Point2Degrees) },
-        { name: "הנץ החמה", time: new Date(zmanim.Sunrise) },
-        { name: "סוף זמן קריאת שמע", time: new Date(zmanim.SofZmanShmaGRA) },
-        { name: "סוף זמן תפילה", time: new Date(zmanim.SofZmanTfilaGRA) },
-        { name: "חצות היום", time: new Date(zmanim.Chatzos) },
-        { name: "מנחה גדולה", time: new Date(zmanim.MinchaGedola) },
-        { name: "מנחה קטנה", time: new Date(zmanim.MinchaKetana) },
-        { name: "פלג המנחה", time: new Date(zmanim.PlagHamincha) },
-        { name: "שקיעה", time: new Date(zmanim.Sunset) },
-        { name: "צאת הכוכבים", time: new Date(zmanim.Tzais) }
+    async function updateCountdown() {
+      // Simulated fetching of Zmanim data
+      const zmanimList = [
+        { name: "שקיעה", time: new Date(new Date().getTime() + 600000) }, // Example: 10 minutes from now
       ];
 
-      if (!isShabbos) {
-        const netz = new Date(zmanim.Sunrise);
-        const offsets = { "ברכות": -27, "ישתבח": -8 };
-        const custom = Object.entries(offsets).map(([name, offset]) => ({
-          name,
-          time: new Date(netz.getTime() + offset * 60000)
-        }));
-        const timeMap = Object.fromEntries(custom.map(z => [z.name, z.time]));
-        const rYishmael = new Date(timeMap["ברכות"].getTime() + 8 * 60000);
-        const kriatShema = new Date(timeMap["ישתבח"].getTime() + 3.5 * 60000);
-        const emes = new Date(kriatShema.getTime() + 2.5 * 60000);
-        zmanimList.push(
-          ...custom,
-          { name: "רבי ישמעאל", time: rYishmael },
-          { name: "קריאת שמע", time: kriatShema },
-          { name: "אמת", time: emes }
-        );
+      const now = new Date();
+      const nextZman = zmanimList.find(z => z.time > now);
+
+      if (nextZman) {
+        labelEl.textContent = nextZman.name;
+        const diff = Math.floor((nextZman.time - now) / 1000);
+        countdownEl.textContent = formatCountdown(diff);
+      } else {
+        labelEl.textContent = "אין זמני יום זמינים כרגע";
+        countdownEl.textContent = "--:--";
       }
+    }
 
-      if (now.getDay() === 5 && zmanim.Sunset) {
-        const candleLightingTime = new Date(new Date(zmanim.Sunset).getTime() - 18 * 60000);
-        globalCandleTime = candleLightingTime;
-        zmanimList.push({ name: "הדלקת נרות", time: candleLightingTime });
-
-        const formatted = candleLightingTime.toLocaleTimeString("he-IL", {
-          hour: '2-digit', minute: '2-digit', hour12: true
-        }).replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
-
-        calendarInfoEl.innerHTML += `
-          <div class="text-xl text-yellow-300 font-semibold animate-pulse">
-            🕯️ הדלקת נרות: ${formatted}
-          </div>
-        `;
-      }
-
-      zmanimList = zmanimList.filter(z => z.time instanceof Date && !isNaN(z.time));
-      zmanimList.sort((a, b) => a.time - b.time);
-
-      function highlightNextZman() {
-        const now = new Date();
-        const chatzosTime = zmanimList.find(z => z.name === "חצות היום")?.time || null;
-        zmanListEl.innerHTML = "";
-        labelEl.dataset.found = "";
-        let soonest = null;
-
-        for (const { name, time } of zmanimList) {
-          const isPast = time <= now;
-          const isAfterChatzos = chatzosTime && now > chatzosTime;
-          const isNext = !soonest && time > now;
-
-          if (isPast && !isAfterChatzos && name !== "הדלקת נרות") continue;
-
-          const div = document.createElement("div");
-          div.className = `transition-all duration-700 text-xl flex justify-between items-center rounded-xl shadow ${
-            isNext ? 'bg-yellow-500 text-black font-bold' : 'bg-gray-700'
-          }`;
-          div.style.padding = "1rem";
-          div.style.marginBottom = "1rem";
-          div.innerHTML = `<span class='font-semibold'>${name}</span><span>${formatTime(time)}</span>`;
-          zmanListEl.appendChild(div);
-
-          if (isNext) soonest = { name, time };
-        }
-
-        if (soonest) {
-          const diff = Math.floor((soonest.time - new Date()) / 1000);
-          labelEl.textContent = soonest.name;
-          timeEl.textContent = formatTime(soonest.time);
-          countdown.textContent = formatCountdown(diff);
-        } else {
-          labelEl.textContent = "אין זמני יום זמינים כרגע";
-          timeEl.textContent = "--:--:--";
-          countdown.textContent = "--:--";
-        }
-      }
-
-      highlightNextZman();
+    function startClock() {
+      updateClockDisplay();
+      updateCountdown();
       setInterval(() => {
         updateClockDisplay();
-        highlightNextZman();
+        updateCountdown();
       }, 1000);
     }
 
