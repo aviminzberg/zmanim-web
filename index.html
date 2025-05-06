@@ -7,31 +7,44 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
   <style>
-    body { background:#111827; color:#fff; font-family:'Varela Round',sans-serif; margin:0; padding:1rem; }
+    body { background:#111827;color:#fff;font-family:'Varela Round',sans-serif;margin:0;padding:1rem; }
     #settingsToggle { position:fixed; top:1rem; right:1rem; font-size:1.5rem; background:none; border:none; color:#fff; cursor:pointer; z-index:1001; }
-    #settings { display:none; position:fixed; top:3rem; right:1rem; background:#222; padding:1rem; border-radius:0.5rem; max-width:320px; width:90%; z-index:1000; }
+    #settings { display:none; position:fixed; top:3rem; right:1rem; background:#222; padding:1rem; border-radius:0.5rem; max-width:360px; width:90%; z-index:1000; }
     #settings h2 { margin-bottom:0.5rem; font-size:1.25rem; }
-    #settings label { display:block; margin-bottom:0.75rem; font-size:0.9rem; color:#fff; }
+    #settings label { display:block; margin-bottom:0.5rem; font-size:0.9rem; color:#fff; }
     #settings input[type=number] { width:3rem; margin:0 0.25rem; background:#fff; color:#000; border:1px solid #555; border-radius:0.25rem; padding:0.1rem; }
-    #settings input[type=checkbox] { accent-color: #fff; }
+    #settings input[type=checkbox] { accent-color:#fff; margin-left:0.5rem; }
     .zman { display:flex; justify-content:space-between; padding:0.5rem; background:#333; border-radius:0.5rem; margin-bottom:0.5rem; }
   </style>
 </head>
 <body class="flex flex-col items-center text-white">
   <button id="settingsToggle" aria-label="Toggle settings">⚙️</button>
   <div id="settings">
-    <h2>הגדרות תזוזות יחס לנץ החמה</h2>
-    <p class="text-sm opacity-75 mb-2">כל ההגדרות הבאות מתייחסות לזמן הנץ החמה</p>
-    <label>ברכות (מ+שניות): <input type="number" id="min-berechot" value="32" min="0"/> דק׳ <input type="number" id="sec-berechot" value="38" min="0" max="59"/> שניות</label>
-    <label>רבי ישמעאל (מ+שניות): <input type="number" id="min-yishmael" value="19" min="0"/> דק׳ <input type="number" id="sec-yishmael" value="22" min="0" max="59"/> שניות</label>
-    <label>ישתבח (מ+שניות): <input type="number" id="min-yishtabach" value="8" min="0"/> דק׳ <input type="number" id="sec-yishtabach" value="22" min="0" max="59"/> שניות</label>
-    <label>קריאת שמע (מ+שניות): <input type="number" id="min-kriat" value="4" min="0"/> דק׳ <input type="number" id="sec-kriat" value="52" min="0" max="59"/> שניות</label>
-    <label>אמת (מ+שניות): <input type="number" id="min-emet" value="2" min="0"/> דק׳ <input type="number" id="sec-emet" value="22" min="0" max="59"/> שניות</label>
-    <label>תהילות (מ+שניות): <input type="number" id="min-tehilot" value="0" min="0"/> דק׳ <input type="number" id="sec-tehilot" value="22" min="0" max="59"/> שניות</label>
-    <hr class="my-2 border-gray-600"/>
-    <label><input type="checkbox" id="show-alos" checked/> הצג עלות השחר (offset מהערכת API)</label>
-    <label><input type="checkbox" id="show-misheyakir" checked/> הצג משיכיר (offset מהערכת API)</label>
-    <label><input type="checkbox" id="show-netz" checked/> הצג הנץ החמה</label>
+    <h2>הגדרות זמני היום</h2>
+    <p class="text-sm opacity-75 mb-2">בחר אילו זמני יום להציג</p>
+    <!-- Morning offsets group -->
+    <fieldset class="border border-gray-600 p-2 mb-2">
+      <legend class="px-1">הזחות ביחס לנץ החמה</legend>
+      <label>ברכות: <input type="checkbox" id="show-berechot" checked/> <input type="number" id="min-berechot" value="32" min="0"/> דק׳ <input type="number" id="sec-berechot" value="38" min="0" max="59"/> ש״ק</label>
+      <label>רבי ישמעאל: <input type="checkbox" id="show-yishmael" checked/> <input type="number" id="min-yishmael" value="19" min="0"/> דק׳ <input type="number" id="sec-yishmael" value="22" min="0" max="59"/> ש״ק</label>
+      <label>ישתבח: <input type="checkbox" id="show-yishtabach" checked/> <input type="number" id="min-yishtabach" value="8" min="0"/> דק׳ <input type="number" id="sec-yishtabach" value="22" min="0" max="59"/> ש״ק</label>
+      <label>קריאת שמע: <input type="checkbox" id="show-kriat" checked/> <input type="number" id="min-kriat" value="4" min="0"/> דק׳ <input type="number" id="sec-kriat" value="52" min="0" max="59"/> ש״ק</label>
+      <label>אמת: <input type="checkbox" id="show-emet" checked/> <input type="number" id="min-emet" value="2" min="0"/> דק׳ <input type="number" id="sec-emet" value="22" min="0" max="59"/> ש״ק</label>
+      <label>תהילות: <input type="checkbox" id="show-tehilot" checked/> <input type="number" id="min-tehilot" value="0" min="0"/> דק׳ <input type="number" id="sec-tehilot" value="22" min="0" max="59"/> ש״ק</label>
+    </fieldset>
+    <!-- Core zmanim group -->
+    <fieldset class="border border-gray-600 p-2">
+      <legend class="px-1">זמני ליבה</legend>
+      <label><input type="checkbox" id="show-alos" checked/> עלות השחר</label>
+      <label><input type="checkbox" id="show-misheyakir" checked/> משיכיר</label>
+      <label><input type="checkbox" id="show-netz" checked/> הנץ החמה</label>
+      <label><input type="checkbox" id="show-chatzos" checked/> חצות היום</label>
+      <label><input type="checkbox" id="show-plag" checked/> פלג המנחה</label>
+      <label><input type="checkbox" id="show-minchagedola" checked/> מנחה גדולה</label>
+      <label><input type="checkbox" id="show-minchaketana" checked/> מנחה קטנה</label>
+      <label><input type="checkbox" id="show-sunset" checked/> שקיעת החמה</label>
+      <label><input type="checkbox" id="show-tzais" checked/> צאת הכוכבים</label>
+    </fieldset>
   </div>
 
   <div id="day" class="text-2xl mb-2">--</div>
@@ -49,56 +62,69 @@
 
     function getOffsets(){
       return {
-        berechot: (parseInt(document.getElementById('min-berechot').value)||0)*60 + (parseInt(document.getElementById('sec-berechot').value)||0),
-        yishmael: -((parseInt(document.getElementById('min-yishmael').value)||0)*60 + (parseInt(document.getElementById('sec-yishmael').value)||0)),
-        yishtabach: -((parseInt(document.getElementById('min-yishtabach').value)||0)*60 + (parseInt(document.getElementById('sec-yishtabach').value)||0)),
-        kriat: -((parseInt(document.getElementById('min-kriat').value)||0)*60 + (parseInt(document.getElementById('sec-kriat').value)||0)),
-        emet: -((parseInt(document.getElementById('min-emet').value)||0)*60 + (parseInt(document.getElementById('sec-emet').value)||0)),
-        tehilot: -((parseInt(document.getElementById('min-tehilot').value)||0)*60 + (parseInt(document.getElementById('sec-tehilot').value)||0))
+        berechot:(parseInt(document.getElementById('min-berechot').value)||0)*60+(parseInt(document.getElementById('sec-berechot').value)||0),
+        yishmael:-((parseInt(document.getElementById('min-yishmael').value)||0)*60+(parseInt(document.getElementById('sec-yishmael').value)||0)),
+        yishtabach:-((parseInt(document.getElementById('min-yishtabach').value)||0)*60+(parseInt(document.getElementById('sec-yishtabach').value)||0)),
+        kriat:-((parseInt(document.getElementById('min-kriat').value)||0)*60+(parseInt(document.getElementById('sec-kriat').value)||0)),
+        emet:-((parseInt(document.getElementById('min-emet').value)||0)*60+(parseInt(document.getElementById('sec-emet').value)||0)),
+        tehilot:-((parseInt(document.getElementById('min-tehilot').value)||0)*60+(parseInt(document.getElementById('sec-tehilot').value)||0))
       };
     }
 
     function update(){
-      const now=new Date();
-      const day=now.getDay();
+      const now=new Date(); const day=now.getDay();
       document.getElementById('day').textContent=hebDays[day];
       document.getElementById('clock').textContent=fmt(now);
 
       const opts={date:now.toISOString().split('T')[0],timeZoneId:Intl.DateTimeFormat().resolvedOptions().timeZone,locationName:'',latitude:loc.latitude,longitude:loc.longitude,elevation:0,complexZmanim:true};
       const Z=KosherZmanim.getZmanimJson(opts).Zmanim;
-      const offsets=getOffsets();
-      const showAlos=document.getElementById('show-alos').checked;
-      const showMisheyakir=document.getElementById('show-misheyakir').checked;
-      const showNetz=document.getElementById('show-netz').checked;
+      const offs=getOffsets();
+
+      const shows={
+        alos:document.getElementById('show-alos').checked,
+        misheyakir:document.getElementById('show-misheyakir').checked,
+        netz:document.getElementById('show-netz').checked,
+        berechot:document.getElementById('show-berechot').checked,
+        yishmael:document.getElementById('show-yishmael').checked,
+        yishtabach:document.getElementById('show-yishtabach').checked,
+        kriat:document.getElementById('show-kriat').checked,
+        emet:document.getElementById('show-emet').checked,
+        tehilot:document.getElementById('show-tehilot').checked,
+        chatzos:document.getElementById('show-chatzos').checked,
+        plag:document.getElementById('show-plag').checked,
+        minchagedola:document.getElementById('show-minchagedola').checked,
+        minchaketana:document.getElementById('show-minchaketana').checked,
+        sunset:document.getElementById('show-sunset').checked,
+        tzais:document.getElementById('show-tzais').checked
+      };
 
       let items=[];
-      if(day<=5){ // Sunday-Friday mornings
-        if(showAlos) items.push({l:'עלות השחר',t:new Date(Z.Alos72)});
-        if(showMisheyakir) items.push({l:'משיכיר',t:new Date(Z.Misheyakir10Point2Degrees)});
+      if(day<=5){
+        if(shows.alos) items.push({l:'עלות השחר',t:new Date(Z.Alos72)});
+        if(shows.misheyakir) items.push({l:'משיכיר',t:new Date(Z.Misheyakir10Point2Degrees)});
         const netz=new Date(Z.Sunrise);
-        if(showNetz) items.push({l:'הנץ החמה',t:netz});
-        items.push({l:'ברכות',t:new Date(netz.getTime()+offsets.berechot*1000)});
-        items.push({l:'רבי ישמעאל',t:new Date(netz.getTime()+offsets.yishmael*1000)});
-        items.push({l:'ישתבח',t:new Date(netz.getTime()+offsets.yishtabach*1000)});
-        items.push({l:'קריאת שמע',t:new Date(netz.getTime()+offsets.kriat*1000)});
-        items.push({l:'אמת',t:new Date(netz.getTime()+offsets.emet*1000)});
-        items.push({l:'תהילות',t:new Date(netz.getTime()+offsets.tehilot*1000)});
+        if(shows.netz) items.push({l:'הנץ החמה',t:netz});
+        if(shows.berechot) items.push({l:'ברכות',t:new Date(netz.getTime()+offs.berechot*1000)});
+        if(shows.yishmael) items.push({l:'רבי ישמעאל',t:new Date(netz.getTime()+offs.yishmael*1000)});
+        if(shows.yishtabach) items.push({l:'ישתבח',t:new Date(netz.getTime()+offs.yishtabach*1000)});
+        if(shows.kriat) items.push({l:'קריאת שמע',t:new Date(netz.getTime()+offs.kriat*1000)});
+        if(shows.emet) items.push({l:'אמת',t:new Date(netz.getTime()+offs.emet*1000)});
+        if(shows.tehilot) items.push({l:'תהילות',t:new Date(netz.getTime()+offs.tehilot*1000)});
       }
       // core zmanim
-      items.push(
-        {l:'חצות היום',t:new Date(Z.Chatzos)},
-        {l:'פלג המנחה',t:new Date(Z.PlagHamincha)},
-        {l:'מנחה גדולה',t:new Date(Z.MinchaGedola)},
-        {l:'שקיעת החמה',t:new Date(Z.Sunset)},
-        {l:'צאת הכוכבים',t:new Date(Z.Tzais)}
-      );
+      if(shows.chatzos) items.push({l:'חצות היום',t:new Date(Z.Chatzos)});
+      if(shows.plag) items.push({l:'פלג המנחה',t:new Date(Z.PlagHamincha)});
+      if(shows.minchagedola) items.push({l:'מנחה גדולה',t:new Date(Z.MinchaGedola)});
+      if(shows.minchaketana) items.push({l:'מנחה קטנה',t:new Date(Z.MinchaKetana)});
+      if(shows.sunset) items.push({l:'שקיעת החמה',t:new Date(Z.Sunset)});
+      if(shows.tzais) items.push({l:'צאת הכוכבים',t:new Date(Z.Tzais)});
+
       items.sort((a,b)=>a.t-b.t);
       const next=items.find(i=>i.t>now);
       if(next){document.getElementById('next').textContent=`הבא: ${next.l} – ${fmt(next.t)}`;const d=Math.floor((next.t-now)/1000),h=Math.floor(d/3600),m=Math.floor((d%3600)/60),s=d%60;document.getElementById('count').textContent=`${h?String(h)+':':''}${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}else{document.getElementById('next').textContent='אין עוד';document.getElementById('count').textContent='--:--';}
       document.getElementById('list').innerHTML=items.map(i=>`<div class="zman">${i.l}<span>${fmt(i.t)}</span></div>`).join('');
     }
     update();setInterval(update,1000);
-
     document.getElementById('settingsToggle').addEventListener('click',()=>{
       const s=document.getElementById('settings');s.style.display=s.style.display==='block'?'none':'block';
     });
