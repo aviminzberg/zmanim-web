@@ -1,126 +1,125 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>זמני היום עם אפשרויות מתקדמות</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>זמני היום עם עיצוב משופר</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: linear-gradient(135deg, #111827, #1f2937);
-      color: #f3f4f6;
+    /* Background gradient & font */
+    body { 
+      background: linear-gradient(to bottom, #1E293B, #111827);
+      color: #fff;
       font-family: 'Varela Round', sans-serif;
       margin: 0;
       padding: 1rem;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
+
+    /* Stylish container for Zmanim */
+    .zman {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.7rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+      transition: 0.3s ease-in-out;
+    }
+
+    .zman:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Settings Panel */
+    #settings {
+      display: none;
+      position: fixed;
+      top: 3rem;
+      right: 1rem;
+      background: rgba(34, 34, 34, 0.95);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      max-width: 360px;
+      width: 90%;
+      z-index: 1000;
+      box-shadow: 0px 6px 10px rgba(0,0,0,0.5);
+    }
+
     #settingsToggle {
       position: fixed;
       top: 1rem;
       right: 1rem;
-      font-size: 2rem;
-      background: none;
-      border: none;
-      color: #62ffd1;
-      cursor: pointer;
-      z-index: 1001;
-      transition: transform 0.3s;
-    }
-    #settingsToggle:hover {
-      transform: rotate(90deg);
-    }
-    #settings {
-      display: none;
-      position: fixed;
-      top: 4rem;
-      right: 1rem;
-      background: rgba(34, 34, 34, 0.95);
-      padding: 1rem;
-      border-radius: 0.7rem;
-      max-width: 360px;
-      width: 90%;
-      z-index: 1000;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    }
-    #settings h2 {
-      margin-bottom: 0.5rem;
       font-size: 1.5rem;
-      color: #62ffd1;
-    }
-    #settings p {
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-      color: #ccc;
-    }
-    #settings label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-      color: #f3f4f6;
-    }
-    #settings input[type=number] {
-      width: 3rem;
-      margin: 0 0.25rem;
-      background: #fff;
+      background: #FBBF24;
       color: #000;
-      border: 1px solid #555;
-      border-radius: 0.25rem;
-      padding: 0.1rem;
+      padding: 0.6rem;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
     }
-    #settings input[type=checkbox] {
-      accent-color: #62ffd1;
-      margin-left: 0.5rem;
-    }
-    fieldset {
-      border: 1px solid #4b5563;
-      margin-bottom: 1rem;
-      padding: 10px;
-      border-radius: 0.5rem;
-    }
-    legend {
-      color: #62ffd1;
-      padding: 0 0.5rem;
-    }
-    .zman {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.7rem;
-      background: rgba(34, 34, 34, 0.85);
-      border-radius: 0.5rem;
-      margin-bottom: 0.5rem;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-      transition: background 0.3s;
-    }
-    .zman:hover {
-      background: rgba(50, 50, 50, 0.9);
-    }
-    #day {
-      font-size: 2.5rem;
-      margin-bottom: 0.75rem;
-    }
-    #clock {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-    }
-    #next {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-    }
-    #count {
-      font-size: 3.5rem;
-      font-weight: bold;
-      margin-bottom: 2rem;
-    }
-    button:focus {
-      outline: none;
+
+    #settingsToggle:hover {
+      transform: scale(1.1);
     }
   </style>
 </head>
 <body class="flex flex-col items-center text-white">
-  <button id="settings
+  <button id="settingsToggle" aria-label="Toggle settings">⚙️</button>
+  <div id="settings">
+    <h2 class="text-xl font-bold mb-2">הגדרות זמני היום</h2>
+    <p class="text-sm opacity-75 mb-3">בחר אילו זמני יום להציג</p>
+    <fieldset class="border border-gray-600 p-2 mb-2">
+      <legend class="px-1">הזחות ביחס לנץ החמה</legend>
+      <label>ברכות: <input type="checkbox" id="show-berechot" checked/> <input type="number" id="min-berechot" value="32" min="0"/> דק׳</label>
+      <label>רבי ישמעאל: <input type="checkbox" id="show-yishmael" checked/> <input type="number" id="min-yishmael" value="19" min="0"/> דק׳</label>
+      <label>ישתבח: <input type="checkbox" id="show-yishtabach" checked/> <input type="number" id="min-yishtabach" value="8" min="0"/> דק׳</label>
+      <label>קריאת שמע: <input type="checkbox" id="show-kriat" checked/> <input type="number" id="min-kriat" value="4" min="0"/> דק׳</label>
+    </fieldset>
+    <fieldset class="border border-gray-600 p-2">
+      <legend class="px-1">זמני ליבה</legend>
+      <label><input type="checkbox" id="show-alos" checked/> עלות השחר</label>
+      <label><input type="checkbox" id="show-misheyakir" checked/> משיכיר</label>
+      <label><input type="checkbox" id="show-netz" checked/> הנץ החמה</label>
+    </fieldset>
+  </div>
+
+  <div id="day" class="text-xl mb-2">--</div>
+  <div id="clock" class="text-6xl font-bold mb-4">--:--:--</div>
+  <div id="next" class="text-xl bg-yellow-400 text-black font-bold px-6 py-3 rounded-lg shadow-lg mb-2">טוען...</div>
+  <div id="count" class="text-2xl text-green-400 font-bold mb-4">--:--</div>
+  <div id="list" class="w-full max-w-md"></div>
+
+  <script>
+  (async()=>{
+    const hebDays=['יום ראשון','יום שני','יום שלישי','יום רביעי','יום חמישי','יום שישי','יום שבת'];
+    const fmt=d=>d.toLocaleTimeString('he-IL',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true})
+      .replace(/לפנה״?צ|אחה״?צ/g,'').replace(/^0/,'').trim();
+    const loc=await fetch('https://ipapi.co/json/').then(r=>r.json()).catch(_=>({latitude:31.778,longitude:35.234}));
+
+    function update(){
+      const now=new Date();
+      document.getElementById('day').textContent=hebDays[now.getDay()];
+      document.getElementById('clock').textContent=fmt(now);
+
+      const opts={date:now.toISOString().split('T')[0],timeZoneId:Intl.DateTimeFormat().resolvedOptions().timeZone,latitude:loc.latitude,longitude:loc.longitude,complexZmanim:true};
+      const Z=KosherZmanim.getZmanimJson(opts).Zmanim;
+
+      let items=[
+        { l: "נץ החמה", t: new Date(Z.Sunrise) },
+        { l: "חצות היום", t: new Date(Z.Chatzos) },
+        { l: "פלג המנחה", t: new Date(Z.PlagHamincha) },
+        { l: "מנחה גדולה", t: new Date(Z.MinchaGedola) },
+        { l: "שקיעה", t: new Date(Z.Sunset) },
+        { l: "צאת הכוכבים", t: new Date(Z.Tzais) }
+      ].sort((a, b) => a.t - b.t);
+
+      document.getElementById('list').innerHTML=items.map(i=>`<div class="zman">${i.l} <span>${fmt(i.t)}</span></div>`).join('');
+    }
+
+    update(); setInterval(update,1000);
+    document.getElementById('settingsToggle').addEventListener('click',()=>document.getElementById('settings').style.display='block');
+  })();
+  </script>
+</body>
+</html>
