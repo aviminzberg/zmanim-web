@@ -6,27 +6,31 @@
   <title>זמני היום עם אפשרויות מתקדמות</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
   <style>
     body {
-      background: linear-gradient(135deg, #1a202c, #2d3748);
-      color: #fff;
-      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(135deg, #111827, #1f2937);
+      color: #f3f4f6;
+      font-family: 'Varela Round', sans-serif;
       margin: 0;
       padding: 1rem;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
     #settingsToggle {
       position: fixed;
       top: 1rem;
       right: 1rem;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       background: none;
       border: none;
-      color: #fff;
+      color: #62ffd1;
       cursor: pointer;
       z-index: 1001;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s;
     }
     #settingsToggle:hover {
       transform: rotate(90deg);
@@ -34,57 +38,89 @@
     #settings {
       display: none;
       position: fixed;
-      top: 3rem;
+      top: 4rem;
       right: 1rem;
-      background: rgba(34, 34, 34, 0.9);
-      padding: 1.5rem;
-      border-radius: 1rem;
-      max-width: 320px;
+      background: rgba(34, 34, 34, 0.95);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      max-width: 360px;
       width: 90%;
       z-index: 1000;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
     }
     #settings h2 {
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+      color: #62ffd1;
+    }
+    #settings p {
       margin-bottom: 1rem;
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-size: 0.9rem;
+      color: #a1a1aa;
     }
     #settings label {
       display: block;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-      color: #e2e8f0;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: #f3f4f6;
+    }
+    #settings input[type=number], #settings input[type=checkbox] {
+      margin-left: 0.5rem;
     }
     #settings input[type=number] {
       width: 3rem;
-      margin: 0 0.25rem;
-      background: #2d3748;
-      color: #fff;
-      border: 1px solid #4a5568;
+      background: #fff;
+      color: #000;
+      border: 1px solid #555;
       border-radius: 0.25rem;
-      padding: 0.25rem;
+      padding: 0.2rem;
     }
     #settings input[type=checkbox] {
-      accent-color: #4299e1;
+      accent-color: #62ffd1;
+    }
+    fieldset {
+      border: 1px solid #4b5563;
+      margin-bottom: 1rem;
+      padding: 10px;
+      border-radius: 0.5rem;
+    }
+    legend {
+      color: #62ffd1;
+      padding: 0 0.5rem;
     }
     .zman {
       display: flex;
       justify-content: space-between;
-      padding: 0.75rem;
-      background: rgba(51, 51, 51, 0.5);
-      border-radius: 0.75rem;
-      margin-bottom: 0.75rem;
-      transition: all 0.3s ease;
+      align-items: center;
+      padding: 0.7rem;
+      background: rgba(34, 34, 34, 0.85);
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+      transition: background 0.3s;
     }
     .zman:hover {
-      background: rgba(51, 51, 51, 0.8);
-      transform: translateY(-2px);
+      background: rgba(50, 50, 50, 0.9);
+    }
+    #day {
+      font-size: 2.5rem; 
+      margin-bottom: 0.75rem;
+    }
+    #clock {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    #next {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    #count {
+      font-size: 3.5rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+    }
+    button:focus {
+      outline: none;
     }
   </style>
-</head>
-<body class="flex flex-col items-center text-white">
-  <button id="settingsToggle" aria-label="Toggle settings">⚙️</button>
-  <div id="settings">
-    <!-- Settings content remains the same -->
-  </div>
+</
