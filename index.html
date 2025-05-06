@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>זמני היום עם אפשרויות מתקדמות</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
@@ -17,14 +17,13 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
     }
     #settingsToggle {
       position: fixed;
       top: 1rem;
       right: 1rem;
-      font-size: 1.8rem;
+      font-size: 2rem;
       background: none;
       border: none;
       color: #62ffd1;
@@ -42,11 +41,11 @@
       right: 1rem;
       background: rgba(34, 34, 34, 0.95);
       padding: 1rem;
-      border-radius: 0.5rem;
+      border-radius: 0.7rem;
       max-width: 360px;
       width: 90%;
       z-index: 1000;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
     #settings h2 {
       margin-bottom: 0.5rem;
@@ -56,7 +55,7 @@
     #settings p {
       margin-bottom: 1rem;
       font-size: 0.9rem;
-      color: #a1a1aa;
+      color: #ccc;
     }
     #settings label {
       display: block;
@@ -64,19 +63,18 @@
       font-size: 1rem;
       color: #f3f4f6;
     }
-    #settings input[type=number], #settings input[type=checkbox] {
-      margin-left: 0.5rem;
-    }
     #settings input[type=number] {
       width: 3rem;
+      margin: 0 0.25rem;
       background: #fff;
       color: #000;
       border: 1px solid #555;
       border-radius: 0.25rem;
-      padding: 0.2rem;
+      padding: 0.1rem;
     }
     #settings input[type=checkbox] {
       accent-color: #62ffd1;
+      margin-left: 0.5rem;
     }
     fieldset {
       border: 1px solid #4b5563;
@@ -103,7 +101,7 @@
       background: rgba(50, 50, 50, 0.9);
     }
     #day {
-      font-size: 2.5rem; 
+      font-size: 2.5rem;
       margin-bottom: 0.75rem;
     }
     #clock {
@@ -123,4 +121,6 @@
       outline: none;
     }
   </style>
-</
+</head>
+<body class="flex flex-col items-center text-white">
+  <button id="settingsToggle
