@@ -1,131 +1,44 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>זמני יום</title>
-  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>זמני היום עם אפשרויות מתקדמות</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
   <style>
-    body {
-      font-family: 'Varela Round', sans-serif;
-      background-color: #111827;
-      color: #fff;
-    }
+    body { background: #111827; color: #fff; font-family: 'Varela Round', sans-serif; margin: 0; padding: 2rem; }
+    #settingsToggle { position: fixed; top: 1rem; right: 1rem; font-size: 1.75rem; border: none; background: transparent; color: #fff; cursor: pointer; z-index: 1001; transition: color 0.3s; }
+    #settingsToggle:hover { color: #9ca3af; }
+    #settings { display: none; position: fixed; top: 3.5rem; right: 1rem; background: #222; padding: 1rem; border-radius: 0.5rem; max-width: 370px; width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; }
+    #settings h2 { margin-bottom: 0.75rem; font-size: 1.25rem; font-weight: 600; color: #f9fafb; }
+    #settings p { font-size: 0.9rem; opacity: 0.75; margin-bottom: 1rem; }
+    fieldset { border: 1px solid #4b5563; border-radius: 0.375rem; padding: 0.75rem; margin-bottom: 1rem; }
+    legend { padding: 0 0.25rem; font-weight: 600; color: #f9fafb; }
+    label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.9rem; color: #f9fafb; }
+    input[type=number] { width: 3rem; margin: 0 0.25rem; background: #fff; color: #000; border: 1px solid #4b5563; border-radius: 0.25rem; padding: 0.1rem; text-align: center; }
+    input[type=checkbox] { accent-color: #ef4444; margin-left: 0.5rem; }
+    .zman { display: flex; justify-content: space-between; padding: 0.75rem; background: #333; border-radius: 0.5rem; margin-bottom: 0.75rem; transition: background 0.2s; }
+    .zman:hover { background: #444; }
+    #main { display: flex; flex-direction: column; align-items: center; max-width: 600px; margin: auto; }
+    #day { font-size: 2rem; margin-bottom: 0.25rem; font-weight: 600; }
+    #clock { font-size: 3rem; margin-bottom: 0.5rem; font-family: 'Helvetica Neue', sans-serif; }
+    #next { font-size: 1.75rem; margin-bottom: 0.75rem; font-weight: 500; color: #9ca3af; }
+    #count { font-size: 2.25rem; margin-bottom: 1rem; font-weight: 700; }
+    #list { width: 100%; padding: 0; margin: 0; }
   </style>
 </head>
-<body class="text-white p-6 min-h-screen flex flex-col justify-center items-center">
-  <div class="text-center mb-10">
-    <div id="clock" class="text-9xl font-extrabold tracking-wide text-white drop-shadow-lg">00:00:00</div>
-  </div>
-  <div class="bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
-    <div id="currentZmanLabel" class="text-3xl font-semibold mb-2">טוען...</div>
-    <div id="currentZmanTime" class="text-4xl font-bold my-2">00:00:00</div>
-    <div id="countdown" class="text-3xl text-green-400 font-bold">00:00</div>
-  </div>
+<body class="flex flex-col items-center font-sans">
 
-  <script>
-    const labelEl = document.getElementById("currentZmanLabel");
-    const timeEl = document.getElementById("currentZmanTime");
-    const countdown = document.getElementById("countdown");
-    const clockEl = document.getElementById("clock");
+  <button id="settingsToggle" aria-label="Toggle settings">⚙️</button>
 
-    function formatTime(date) {
-      let time = date.toLocaleTimeString("he-IL", {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      }).replace(/לפנה״צ|אחה״צ/g, '').replace(/[^0-9:]/g, '');
-      let [h, m, s] = time.split(":");
-      if (h.startsWith("0")) h = h.slice(1);
-      return `${h}:${m}:${s}`;
-    }
+  <div id="settings">
+    <h2>הגדרות זמני היום</h2>
+    <p>בחר אילו זמני יום להציג</p>
 
-    function formatCountdown(seconds) {
-      let h = Math.floor(seconds / 3600);
-      let m = Math.floor((seconds % 3600) / 60);
-      let s = seconds % 60;
-      const pad = n => n < 10 ? '0' + n : n;
-      return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
-    }
-
-    function updateClockDisplay() {
-      const now = new Date();
-      clockEl.textContent = now.toLocaleTimeString("en-US", {
-        hour: 'numeric',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      }).replace(/\s?(AM|PM)/, '');
-    }
-
-    async function fetchLocation() {
-      const res = await fetch("https://ipapi.co/json/");
-      const data = await res.json();
-      return { lat: data.latitude, lon: data.longitude };
-    }
-
-    async function startClock() {
-      updateClockDisplay();
-      const { lat, lon } = await fetchLocation();
-      const options = {
-        date: new Date().toISOString().split("T")[0],
-        timeZoneId: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        locationName: "Local",
-        latitude: lat,
-        longitude: lon,
-        elevation: 0,
-        complexZmanim: true
-      };
-
-      const zmanim = KosherZmanim.getZmanimJson(options).Zmanim;
-      const zmanimList = [
-        { name: "עלות השחר", time: new Date(zmanim.Alos72) },
-        { name: "משיכיר", time: new Date(zmanim.Misheyakir10Point2Degrees) },
-        { name: "הנץ החמה", time: new Date(zmanim.Sunrise) },
-        { name: "סוף זמן קריאת שמע (מ\"א)", time: new Date(zmanim.SofZmanShmaMGA) },
-        { name: "סוף זמן תפילה (מ\"א)", time: new Date(zmanim.SofZmanTfilaMGA) },
-        { name: "סוף זמן קריאת שמע", time: new Date(zmanim.SofZmanShmaGRA) },
-        { name: "סוף זמן תפילה", time: new Date(zmanim.SofZmanTfilaGRA) },
-        { name: "חצות היום", time: new Date(zmanim.Chatzos) },
-        { name: "מנחה גדולה", time: new Date(zmanim.MinchaGedola) },
-        { name: "מנחה קטנה", time: new Date(zmanim.MinchaKetana) },
-        { name: "פלג המנחה", time: new Date(zmanim.PlagHamincha) },
-        { name: "שקיעה", time: new Date(zmanim.Sunset) },
-        { name: "צאת הכוכבים", time: new Date(zmanim.Tzais) }
-      ];
-
-      zmanimList.sort((a, b) => a.time - b.time);
-
-      function highlightNextZman() {
-        const now = new Date();
-        let soonest = null;
-        for (const z of zmanimList) {
-          if (z.time > now && !soonest) soonest = z;
-        }
-
-        if (soonest) {
-          const diff = Math.floor((soonest.time - now) / 1000);
-          labelEl.textContent = soonest.name;
-          timeEl.textContent = formatTime(soonest.time);
-          countdown.textContent = formatCountdown(diff);
-        } else {
-          labelEl.textContent = "אין זמני יום זמינים כרגע";
-          timeEl.textContent = "--:--:--";
-          countdown.textContent = "--:--";
-        }
-      }
-
-      highlightNextZman();
-      setInterval(() => {
-        updateClockDisplay();
-        highlightNextZman();
-      }, 1000);
-    }
-
-    startClock();
-  </script>
-</body>
-</html>
+    <!-- Offsets Group -->
+    <fieldset>
+      <legend>הזחות ביחס לנץ החמה</legend>
+      <label>ברכות:
+        <div class="flex items-center space-x-2">
+          <input
