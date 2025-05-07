@@ -1,132 +1,158 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>זמני היום</title>
 
-  <!-- Font & Zmanim library -->
-  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet"/>
+  <!-- Google Font & Kosher Zmanim library -->
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
 
   <!-- Inline CSS -->
   <style>
     :root {
-      --bg-dark:#111827;--bg-light:#1F2937;
-      --text-main:#F9FAFB;--text-muted:#9CA3AF;
-      --accent:#5A9BD8;--shadow:rgba(0,0,0,0.4);
-      --space-sm:8px;--space-md:16px;--space-lg:24px;
-      --font-sans:'Varela Round',sans-serif;
-      --radius:0.75rem;
+      --bg-dark: #111827;
+      --bg-light: #1F2937;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --accent: #5A9BD8;
+      --shadow-color: rgba(0,0,0,0.4);
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --font-sans: 'Varela Round', sans-serif;
+      --radius: 0.75rem;
     }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html,body{width:100%;height:100%;overflow:hidden}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
     body {
-      font-family:var(--font-sans);
-      background:var(--bg-dark);
-      color:var(--text-main);
-      display:flex;flex-direction:column;align-items:center;
-      padding:var(--space-lg);
+      font-family: var(--font-sans);
+      background: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-lg);
     }
-    #clock {
-      font-size:2.5rem;font-weight:bold;
-      text-shadow:0 2px 4px var(--shadow);
-      margin-bottom:var(--space-sm);
-    }
-    #calendarInfo,#hebrewDate {
-      font-size:1rem;color:var(--text-muted);
-      text-align:center;margin-bottom:var(--space-sm);
-    }
-    #currentZmanLabel { font-size:1.2rem;margin-top:var(--space-md) }
-    #currentZmanTime {
-      font-size:2rem;font-weight:bold;color:var(--accent);
-      margin:var(--space-sm) 0;
-    }
-    #countdown { font-size:1rem;color:var(--text-muted);margin-bottom:var(--space-md) }
+    #dayOfWeek { font-size: 1rem; color: var(--text-muted); margin-bottom: 4px; text-align: center; }
+    #calendarInfo, #hebrewDate { font-size: 1rem; color: var(--text-muted); text-align: center; margin-bottom: 4px; }
+    #clock { font-size: 2.5rem; font-weight: bold; text-shadow: 0 2px 4px var(--shadow-color); margin-bottom: 4px; }
+    #currentZmanLabel { font-size: 1.2rem; margin-top: var(--space-md); }
+    #currentZmanTime { font-size: 2rem; font-weight: bold; color: var(--accent); margin: 4px 0; }
+    #countdown { font-size: 1rem; color: var(--text-muted); margin-bottom: var(--space-md); }
     #zmanList {
-      width:100%;max-width:360px;
-      display:grid;gap:var(--space-sm);
-      overflow-y:auto;padding-bottom:var(--space-lg);
+      width: 100%; max-width: 360px;
+      display: grid;
+      gap: var(--space-sm);
+      overflow-y: auto;
+      padding-bottom: var(--space-lg);
     }
-    #zmanList>div {
-      display:flex;justify-content:space-between;
-      background:var(--bg-light);padding:var(--space-sm) var(--space-md);
-      border-radius:var(--radius);
-      box-shadow:0 2px 4px var(--shadow);
-      transition:transform .15s,box-shadow .15s;
+    #zmanList > div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-light);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 4px var(--shadow-color);
+      transition: transform .15s, box-shadow .15s;
     }
-    #zmanList>div:hover {
-      transform:translateY(-2px);
-      box-shadow:0 4px 8px var(--shadow);
+    #zmanList > div:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow-color);
     }
-    #zmanList>div.next {
-      border-left:4px solid var(--accent);
-      background:var(--accent);color:#111;
+    #zmanList > div.next {
+      background: var(--accent);
+      color: #111;
     }
-    /* Settings button */
     #settingsBtn {
-      position:fixed;top:var(--space-md);left:var(--space-md);
-      width:2.5rem;height:2.5rem;
-      background:var(--bg-light);border:none;border-radius:50%;
-      color:var(--text-main);font-size:1.25rem;
-      cursor:pointer;box-shadow:0 2px 4px var(--shadow);
-      z-index:100;
-      transition:transform .2s,background .2s;
+      position: fixed;
+      top: var(--space-md);
+      left: var(--space-md);
+      width: 2.5rem;
+      height: 2.5rem;
+      background: var(--bg-light);
+      border: none;
+      border-radius: 50%;
+      color: var(--text-main);
+      font-size: 1.25rem;
+      cursor: pointer;
+      box-shadow: 0 2px 4px var(--shadow-color);
+      z-index: 100;
+      transition: transform .2s, background .2s;
     }
     #settingsBtn:hover {
-      background:var(--accent);color:#fff;transform:scale(1.1);
+      background: var(--accent);
+      color: #fff;
+      transform: scale(1.1);
     }
-    /* Modal */
     .modal {
-      position:fixed;inset:0;
-      background:rgba(0,0,0,0.6);
-      display:flex;align-items:center;justify-content:center;
-      z-index:200;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
     }
-    .hidden { display:none }
+    .hidden { display: none; }
     .modal-content {
-      background:var(--bg-light);
-      padding:var(--space-md);
-      border-radius:var(--radius);
-      width:90%;max-width:400px;
-      box-shadow:0 4px 12px var(--shadow);
+      background: var(--bg-light);
+      padding: var(--space-md);
+      border-radius: var(--radius);
+      width: 90%; max-width: 400px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px var(--shadow-color);
     }
     .modal-content h2 {
-      text-align:center;color:var(--accent);
-      margin-bottom:var(--space-md);
+      text-align: center;
+      margin-bottom: var(--space-md);
+      color: var(--accent);
     }
     .modal-content fieldset {
-      border:1px solid var(--text-muted);
-      border-radius:var(--radius);
-      padding:var(--space-sm) var(--space-md);
-      margin-bottom:var(--space-md);
+      border: 1px solid var(--text-muted);
+      border-radius: var(--radius);
+      padding: var(--space-xs) var(--space-sm);
+      margin-bottom: var(--space-md);
     }
-    .modal-content legend { font-weight:600;padding:0 var(--space-sm) }
+    .modal-content legend { font-weight: 600; padding: 0 var(--space-xs); }
     .modal-content label {
-      display:flex;justify-content:space-between;
-      align-items:center;margin-bottom:var(--space-sm);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-sm);
+      font-size: 1rem;
     }
     .modal-content input {
-      width:4rem;padding:4px;
-      background:var(--bg-dark);
-      border:1px solid var(--text-muted);
-      border-radius:4px;color:var(--text-main);
+      width: 4rem;
+      padding: 4px;
+      background: var(--bg-dark);
+      border: 1px solid var(--text-muted);
+      border-radius: 4px;
+      color: var(--text-main);
     }
     .buttons {
-      display:flex;justify-content:flex-end;gap:var(--space-sm);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-sm);
     }
     .buttons button {
-      padding:4px 12px;border:none;border-radius:var(--radius);
-      background:var(--accent);color:#fff;cursor:pointer;
-      transition:background .2s;
+      padding: 4px 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      cursor: pointer;
+      transition: background .2s;
     }
-    .buttons button:hover { background:#4982b2 }
+    .buttons button:hover { background: #4982b2; }
   </style>
 </head>
-
 <body>
   <button id="settingsBtn">⚙️</button>
-
+  <div id="dayOfWeek"></div>
   <div id="calendarInfo"></div>
   <div id="clock">00:00:00</div>
   <div id="hebrewDate">תאריך עברי</div>
@@ -135,7 +161,6 @@
   <div id="countdown">00:00</div>
   <div id="zmanList"></div>
 
-  <!-- Settings Modal -->
   <div id="settingsModal" class="modal hidden">
     <div class="modal-content">
       <h2>הגדרות זמני יום</h2>
@@ -156,7 +181,6 @@
           <label><input type="checkbox" name="zman" value="Sunset"> שקיעה</label><br/>
           <label><input type="checkbox" name="zman" value="Tzais"> צאת הכוכבים</label>
         </fieldset>
-
         <fieldset>
           <legend>Offsets מותאמים (מ־נץ בדקות:שניות)</legend>
           <label>ברכות  <input type="text" name="ברכות" placeholder="-32:38"></label><br/>
@@ -166,7 +190,6 @@
           <label>אמת  <input type="text" name="אמת" placeholder="-2:22"></label><br/>
           <label>תהילות  <input type="text" name="תהילות" placeholder="-0:22"></label>
         </fieldset>
-
         <div class="buttons">
           <button type="button" id="cancelSettings">ביטול</button>
           <button type="submit">שמור</button>
@@ -175,175 +198,126 @@
     </div>
   </div>
 
-  <!-- Inline JS -->
   <script>
-  (async()=>{
-    // refs
-    const settingsBtn    = document.getElementById("settingsBtn"),
-          settingsModal  = document.getElementById("settingsModal"),
-          settingsForm   = document.getElementById("settingsForm"),
-          cancelSettings = document.getElementById("cancelSettings"),
-          calendarInfoEl = document.getElementById("calendarInfo"),
-          clockEl        = document.getElementById("clock"),
-          hebrewDateEl   = document.getElementById("hebrewDate"),
-          labelEl        = document.getElementById("currentZmanLabel"),
-          timeEl         = document.getElementById("currentZmanTime"),
-          countdownEl    = document.getElementById("countdown"),
-          zmanListEl     = document.getElementById("zmanList");
+  (async ()=> {
+    const dayOfWeekEl    = document.getElementById("dayOfWeek");
+    const calendarInfoEl = document.getElementById("calendarInfo");
+    const clockEl        = document.getElementById("clock");
+    const hebrewDateEl   = document.getElementById("hebrewDate");
+    const labelEl        = document.getElementById("currentZmanLabel");
+    const timeEl         = document.getElementById("currentZmanTime");
+    const countdownEl    = document.getElementById("countdown");
+    const zmanListEl     = document.getElementById("zmanList");
+    const settingsBtn    = document.getElementById("settingsBtn");
+    const settingsModal  = document.getElementById("settingsModal");
+    const settingsForm   = document.getElementById("settingsForm");
+    const cancelSettings = document.getElementById("cancelSettings");
 
-    // defaults
-    const CORE_KEYS = [
-      "Alos72","Misheyakir10Point2Degrees","Sunrise",
-      "SofZmanShmaMGA","SofZmanShmaGRA","SofZmanTfilaMGA",
-      "SofZmanTfilaGRA","Chatzos","MinchaGedola",
-      "MinchaKetana","PlagHamincha","Sunset","Tzais"
-    ];
-    const CORE_LABELS = {
-      Alos72:"עלות השחר",Misheyakir10Point2Degrees:"משיכיר",
-      Sunrise:"הנץ החמה",SofZmanShmaMGA:"סוף זמן קריאת שמע (מ״א)",
-      SofZmanShmaGRA:"סוף זמן קריאת שמע (ג״ר״א)",
-      SofZmanTfilaMGA:"סוף זמן תפילה (מ״א)",
-      SofZmanTfilaGRA:"סוף זמן תפילה (ג״ר״א)",
-      Chatzos:"חצות היום",MinchaGedola:"מנחה גדולה",
-      MinchaKetana:"מנחה קטנה",PlagHamincha:"פלג המנחה",
-      Sunset:"שקיעה",Tzais:"צאת הכוכבים"
-    };
+    const CORE_KEYS = ["Alos72","Misheyakir10Point2Degrees","Sunrise","SofZmanShmaMGA","SofZmanShmaGRA","SofZmanTfilaMGA","SofZmanTfilaGRA","Chatzos","MinchaGedola","MinchaKetana","PlagHamincha","Sunset","Tzais"];
+    const CORE_LABELS = {Alos72:"עלות השחר",Misheyakir10Point2Degrees:"משיכיר",Sunrise:"הנץ החמה",SofZmanShmaMGA:"סוף זמן קריאת שמע (מ״א)",SofZmanShmaGRA:"סוף זמן קריאת שמע (ג״ר״א)",SofZmanTfilaMGA:"סוף זמן תפילה (מ״א)",SofZmanTfilaGRA:"סוף זמן תפילה (ג״ר״א)",Chatzos:"חצות היום",MinchaGedola:"מנחה גדולה",MinchaKetana:"מנחה קטנה",PlagHamincha:"פלג המנחה",Sunset:"שקיעה",Tzais:"צאת הכוכבים"};
     const CUSTOM_KEYS = ["ברכות","רבי ישמעאל","ישתבח","קריאת שמע","אמת","תהילות"];
-    const DEFAULT_OFFSETS={
-      "ברכות":-1958,"רבי ישמעאל":-1162,
-      "ישתבח":-502,"קריאת שמע":-292,
-      "אמת":-142,"תהילות":-22
-    };
+    const DEFAULT_OFFSETS = {"ברכות":-1958,"רבי ישמעאל":-1162,"ישתבח":-502,"קריאת שמע":-292,"אמת":-142,"תהילות":-22};
 
-    // offset helpers
     function formatOffset(sec){
-      const sign=sec<0?'-':'';
-      sec=Math.abs(sec);
-      const m=Math.floor(sec/60),s=sec%60;
-      return sign+m+':'+(s<10?'0'+s:s);
+      const sign=sec<0?'-':''; sec=Math.abs(sec);
+      const m=Math.floor(sec/60), s=sec%60;
+      return `${sign}${m}:${s<10?'0'+s:s}`;
     }
     function parseOffset(str){
-      str=str.trim();if(!str)return NaN;
+      str=str.trim(); if(!str) return NaN;
       const sign=str.startsWith('-')?-1:1;
       str=str.replace(/^[+-]/,'');
-      const [mPart,sPart]=str.split(':'),
-            m=parseInt(mPart,10),
-            s=sPart?parseInt(sPart,10):0;
+      const [mp,sp]=str.split(':');
+      const m=parseInt(mp,10), s=sp?parseInt(sp,10):0;
       return isNaN(m)||isNaN(s)?NaN:sign*(m*60+s);
     }
 
-    // load settings
+    function updateDayOfWeek(){
+      const heb=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+      dayOfWeekEl.textContent=`יום ${heb[new Date().getDay()]}`;
+    }
+
     let userVisible=JSON.parse(localStorage.getItem("visible")||"null");
-    if(!Array.isArray(userVisible)||!userVisible.length)
-      userVisible=CORE_KEYS.slice();
+    if(!Array.isArray(userVisible)||!userVisible.length) userVisible=CORE_KEYS.slice();
     const userOffsets=JSON.parse(localStorage.getItem("offsets"))||{...DEFAULT_OFFSETS};
 
-    // populate form
-    settingsForm.querySelectorAll('input[name="zman"]').forEach(cb=>{
-      cb.checked=userVisible.includes(cb.value);
-    });
+    settingsForm.querySelectorAll('input[name="zman"]').forEach(cb=>cb.checked=userVisible.includes(cb.value));
     CUSTOM_KEYS.forEach(key=>{
       const inp=settingsForm.querySelector(`input[name="${key}"]`);
       if(inp) inp.value=formatOffset(userOffsets[key]);
     });
 
-    // settings UI
-    settingsBtn.onclick    =()=>settingsModal.classList.remove("hidden");
-    cancelSettings.onclick =()=>settingsModal.classList.add("hidden");
-    settingsForm.onsubmit  =e=>{
+    settingsBtn.onclick=()=>settingsModal.classList.remove("hidden");
+    cancelSettings.onclick=()=>settingsModal.classList.add("hidden");
+    settingsModal.onclick=e=>{if(e.target===settingsModal)settingsModal.classList.add("hidden");};
+    window.addEventListener('keydown',e=>{if(e.key==='Escape')settingsModal.classList.add('hidden');});
+
+    settingsForm.onsubmit=e=>{
       e.preventDefault();
-      const vis=Array.from(settingsForm.querySelectorAll('input[name="zman"]:checked'))
-                     .map(cb=>cb.value);
+      const vis=Array.from(settingsForm.querySelectorAll('input[name="zman"]:checked')).map(cb=>cb.value);
       localStorage.setItem("visible",JSON.stringify(vis.length?vis:CORE_KEYS));
       const offs={};
       CUSTOM_KEYS.forEach(key=>{
         const raw=settingsForm.querySelector(`input[name="${key}"]`).value;
-        const val=parseOffset(raw);
-        offs[key]=isNaN(val)?DEFAULT_OFFSETS[key]:val;
+        const v=parseOffset(raw);
+        offs[key]=isNaN(v)?DEFAULT_OFFSETS[key]:v;
       });
       localStorage.setItem("offsets",JSON.stringify(offs));
-      settingsModal.classList.add("hidden");
-      location.reload();
+      settingsModal.classList.add("hidden"); location.reload();
     };
 
-    // time formatting
     function formatTime(d){
-      return d.toLocaleTimeString("he-IL",{
-        hour:'numeric',minute:'2-digit',second:'2-digit',hour12:false
-      }).replace(/[^0-9:]/g,'');
+      let t=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
+      return t.replace(/\s?(AM|PM)/,'');
     }
     function formatCountdown(sec){
-      const h=Math.floor(sec/3600),
-            m=Math.floor((sec%3600)/60),
-            s=sec%60,
-            pad=n=>n<10?'0'+n:n;
+      const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+      const pad=n=>n<10?'0'+n:n;
       return h>0?`${h}:${pad(m)}:${pad(s)}`:`${m}:${pad(s)}`;
     }
-    function updateClock(){
-      const t=new Date().toLocaleTimeString("en-US",{
-        hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true
-      });
-      clockEl.textContent=t.replace(/\s?(AM|PM)/,'');
-    }
+    function updateClock(){ clockEl.textContent=formatTime(new Date()); }
 
-    // hebrew date
     async function updateHebrewDate(){
       try{
         const now=new Date();
-        const res=await fetch(
-          `https://www.hebcal.com/converter?cfg=json`+
-          `&gy=${now.getFullYear()}`+
-          `&gm=${now.getMonth()+1}`+
-          `&gd=${now.getDate()}`+
-          `&g2h=1`
-        );
+        const res=await fetch(`https://www.hebcal.com/converter?cfg=json&gy=${now.getFullYear()}&gm=${now.getMonth()+1}&gd=${now.getDate()}&g2h=1`);
         hebrewDateEl.textContent=(await res.json()).hebrew;
-      }catch{
-        hebrewDateEl.textContent="שגיאה בתאריך";
-      }
-    }
-    // geo
-    async function fetchLocation(){
-      try{
-        const res=await fetch("https://ipapi.co/json/");
-        const d=await res.json();
-        return {lat:d.latitude,lon:d.longitude};
-      }catch{
-        return {lat:40.0821,lon:-74.2097};
-      }
+      }catch{ hebrewDateEl.textContent="שגיאה בתאריך"; }
     }
 
-    // start
-    updateClock();setInterval(updateClock,1000);
+    async function fetchLocation(){
+      return new Promise(resolve=>{
+        if(navigator.geolocation){
+          navigator.geolocation.getCurrentPosition(
+            pos=>resolve({lat:pos.coords.latitude,lon:pos.coords.longitude}),
+            ()=>resolve({lat:40.0821,lon:-74.2097}),
+            {enableHighAccuracy:true,timeout:10000}
+          );
+        } else resolve({lat:40.0821,lon:-74.2097});
+      });
+    }
+
+    updateDayOfWeek();
+    updateClock(); setInterval(updateClock,1000);
     await updateHebrewDate();
 
-    const {lat,lon}=await fetchLocation(),
-          raw=KosherZmanim.getZmanimJson({
-            date:new Date().toISOString().slice(0,10),
-            timeZoneId:Intl.DateTimeFormat().resolvedOptions().timeZone,
-            locationName:"Local",
-            latitude:lat,longitude:lon,
-            elevation:0,complexZmanim:true
-          }).Zmanim,
-          now=new Date(),
-          list=[];
+    const {lat,lon}=await fetchLocation();
+    const now=new Date();
+    const raw=KosherZmanim.getZmanimJson({
+      date:now.toISOString().slice(0,10),
+      timeZoneId:Intl.DateTimeFormat().resolvedOptions().timeZone,
+      locationName:"Local",latitude:lat,longitude:lon,
+      elevation:0,complexZmanim:true
+    }).Zmanim;
 
-    // candle
-    if(now.getDay()===5&&raw.Sunset){
+    const list=[];
+    if(now.getDay()===5 && raw.Sunset){
       const cl=new Date(raw.Sunset);
       cl.setMinutes(cl.getMinutes()-18);
       list.push({name:"הדלקת נרות",time:cl});
-      calendarInfoEl.innerHTML=`
-        <div style="color:#FFD700;font-weight:bold">
-          🕯️ הדלקת נרות: ${formatTime(cl)}
-        </div>`;
+      calendarInfoEl.innerHTML=`<div style="color:#FFD700;font-weight:bold;">🕯️ הדלקת נרות: ${formatTime(cl)}</div>`;
     }
-    // core
-    CORE_KEYS.forEach(key=>{
-      if(userVisible.includes(key)&&raw[key])
-        list.push({name:CORE_LABELS[key],time:new Date(raw[key])});
-    });
-    // offsets
+    CORE_KEYS.forEach(key=>{ if(userVisible.includes(key)&&raw[key]) list.push({name:CORE_LABELS[key],time:new Date(raw[key])}); });
     if(raw.Sunrise){
       const netz=new Date(raw.Sunrise);
       CUSTOM_KEYS.forEach(key=>{
@@ -352,32 +326,33 @@
       });
     }
 
-    // render
-    const sorted=list.sort((a,b)=>a.time-b.time),
-          next=sorted.find(z=>z.time>new Date());
+    const sorted=list.sort((a,b)=>a.time-b.time);
+    let next=sorted.find(z=>z.time>new Date());
+
     function render(){
       const now=new Date();
+      next=sorted.find(z=>z.time>now);
       if(next){
         labelEl.textContent=next.name;
         timeEl.textContent=formatTime(next.time);
         countdownEl.textContent=formatCountdown(Math.floor((next.time-now)/1000));
-      }else{
+      } else {
         labelEl.textContent="אין זמני יום זמינים כרגע";
         timeEl.textContent="--:--:--";
         countdownEl.textContent="--:--";
       }
-      zmanListEl.innerHTML="";
-      const chatz=sorted.find(z=>z.name==="חצות היום")?.time;
+      zmanListEl.innerHTML='';
       sorted.forEach(({name,time})=>{
-        if(time<=now&&(!(chatz)||now<chatz))return;
-        const div=document.createElement("div");
-        div.className=name===next?.name?"next":"";
+        if(time<=now) return;
+        const div=document.createElement('div');
+        if(name===next?.name) div.classList.add('next');
         div.innerHTML=`<span>${name}</span><span>${formatTime(time)}</span>`;
         zmanListEl.append(div);
       });
     }
+
     render();
-    setInterval(()=>{updateClock();render()},1000);
+    setInterval(render,1000);
   })();
   </script>
 </body>
