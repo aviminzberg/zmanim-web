@@ -1,320 +1,566 @@
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>זמני היום</title>
-
-  <!-- Font & KosherZmanim -->
-  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
+  <!-- Google Fonts: Cormorant Garamond (for Della Robbia), Ezra SIL -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Varela+Round&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Ezra+SIL:wght@400&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
-
   <style>
     :root {
-      --bg-dark: #111827;
-      --bg-light: #1F2937;
-      --text-main: #F9FAFB;
-      --text-muted: #9CA3AF;
-      --accent: #5A9BD8;
-      --shadow-color: rgba(0,0,0,0.4);
-      --radius: 0.75rem;
+      --olive-dark: #376055;
+      --olive-light: #4c7a6b;
+      --glass-bg: rgba(255,255,255,0.10);
+      --glass-border: rgba(255,255,255,0.25);
+      --main-cyan: #e0f7fa;
+      --main-white: #fff;
+      --main-shadow: 0 4px 32px 0 rgba(56, 96, 85, 0.25);
+      --glow-cyan: 0 0 24px 2px #b2ebf2;
+      --glow-white: 0 0 24px 2px #fff;
+      --font-roman: 'Cormorant Garamond', serif;
+      --font-hebrew: 'Ezra SIL', serif;
+      --radius-pill: 2rem;
+      --radius-card: 1.5rem;
+      --space-xl: 48px;
+      --space-lg: 32px;
+      --space-md: 20px;
+      --space-sm: 12px;
+      --space-xs: 6px;
     }
-    body {
-      font-family: 'Varela Round', sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-main);
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
       margin: 0;
-      padding: 24px;
+      padding: 0;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-light) 100%);
+      min-height: 100vh;
+      min-width: 100vw;
+      box-sizing: border-box;
+      font-family: var(--font-roman);
+    }
+
+    body {
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
+      padding: var(--space-xl) var(--space-md) var(--space-md) var(--space-md);
+      box-sizing: border-box;
+      height: 100vh;
+      width: 100vw;
     }
-    #dayOfWeek, #calendarInfo, #hebrewDate, #countdown {
-      text-align: center;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
+
+    /* Main Clock */
     #clock {
-      font-size: 3rem;
-      font-weight: bold;
-      text-shadow: 0 2px 4px var(--shadow-color);
+      font-family: var(--font-roman);
+      font-size: 7vw;
+      font-weight: 700;
+      color: var(--main-cyan);
+      width: 90vw;
+      max-width: 90vw;
+      text-align: center;
+      letter-spacing: 0.1em;
+      margin: var(--space-lg) 0 var(--space-md) 0;
+      text-shadow: var(--glow-cyan), 0 2px 8px #222;
+      background: var(--glass-bg);
+      border-radius: var(--radius-card);
+      box-shadow: var(--main-shadow);
+      border: 1.5px solid var(--glass-border);
+      backdrop-filter: blur(6px);
+      padding: var(--space-lg) 0;
+      user-select: none;
     }
-    #currentZmanLabel {
+
+    /* Hebrew Day/Parsha */
+    #dayOfWeek, #calendarInfo, #hebrewDate {
+      font-family: var(--font-hebrew);
+      font-size: 1.5rem;
+      color: var(--main-white);
+      text-align: right;
+      margin-bottom: var(--space-xs);
+      text-shadow: 0 1px 4px #222;
+      letter-spacing: 0.04em;
+      padding-right: var(--space-sm);
+      padding-left: var(--space-sm);
+    }
+    #calendarInfo {
       font-size: 1.2rem;
-      margin-top: 16px;
+      color: #e6e6e6;
+      margin-bottom: var(--space-xs);
+    }
+    #hebrewDate {
+      font-size: 1.2rem;
+      color: #b2ebf2;
+      margin-bottom: var(--space-md);
+    }
+
+    /* Countdown Pill/Card */
+    #countdown {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-roman);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--main-cyan);
+      background: var(--glass-bg);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--main-shadow), var(--glow-cyan);
+      border: 1.5px solid var(--glass-border);
+      backdrop-filter: blur(8px);
+      padding: var(--space-sm) var(--space-lg);
+      margin: 0 auto var(--space-lg) auto;
+      min-width: 180px;
+      min-height: 3.5rem;
+      transition: box-shadow 0.2s;
+      user-select: none;
+    }
+
+    /* Current Zman Card */
+    #currentZmanLabel, #currentZmanTime {
+      font-family: var(--font-hebrew);
+      font-size: 1.3rem;
+      color: var(--main-white);
+      text-align: right;
+      margin-bottom: var(--space-xs);
+      padding-right: var(--space-sm);
+      padding-left: var(--space-sm);
+      letter-spacing: 0.04em;
     }
     #currentZmanTime {
       font-size: 2rem;
       font-weight: bold;
-      color: var(--accent);
-      margin: 4px 0;
+      color: var(--main-cyan);
+      text-shadow: var(--glow-cyan);
+      margin-bottom: var(--space-md);
     }
+
+    /* Zman List */
     #zmanList {
-      max-width: 360px;
       width: 100%;
-      display: grid;
-      gap: 8px;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
       overflow-y: auto;
-      margin-top: 16px;
+      padding-bottom: var(--space-lg);
+      margin: 0 auto;
     }
     #zmanList > div {
       display: flex;
       justify-content: space-between;
-      background: var(--bg-light);
-      padding: 8px 16px;
-      border-radius: var(--radius);
-      box-shadow: 0 2px 4px var(--shadow-color);
+      align-items: center;
+      font-family: var(--font-hebrew);
+      font-size: 1.1rem;
+      background: var(--glass-bg);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--main-shadow);
+      border: 1.5px solid var(--glass-border);
+      padding: var(--space-sm) var(--space-md);
+      color: var(--main-white);
+      transition: box-shadow .15s, background .15s;
+      margin-bottom: 0;
+      min-height: 2.5rem;
+      text-align: right;
+      backdrop-filter: blur(6px);
     }
     #zmanList > div.next {
-      background: var(--accent);
-      color: #111;
+      background: rgba(224, 247, 250, 0.25);
+      color: #222;
+      box-shadow: var(--main-shadow), var(--glow-cyan);
+      font-weight: bold;
     }
+    #zmanList > div:hover {
+      box-shadow: 0 6px 24px #b2ebf2;
+      background: rgba(224, 247, 250, 0.18);
+      color: #222;
+    }
+
+    /* Settings Button */
     #settingsBtn {
       position: fixed;
-      top: 16px;
-      left: 16px;
-      background: var(--bg-light);
-      color: white;
-      border: none;
+      bottom: var(--space-md);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3.5rem;
+      height: 3.5rem;
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 1.2rem;
+      color: var(--main-cyan);
+      font-size: 2rem;
       cursor: pointer;
-    }
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      box-shadow: var(--main-shadow), var(--glow-cyan);
       z-index: 100;
+      transition: transform .2s, background .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      outline: none;
+      user-select: none;
     }
-    .hidden {
-      display: none;
+    #settingsBtn:hover {
+      background: rgba(224, 247, 250, 0.18);
+      color: #fff;
+      transform: scale(1.08);
+      box-shadow: var(--main-shadow), var(--glow-white);
     }
-    .modal-content {
-      background: var(--bg-light);
-      padding: 16px;
-      border-radius: var(--radius);
-      width: 90%;
-      max-width: 400px;
-      color: white;
+
+    /* Slide-in Settings Panel */
+    .settings-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      max-width: 480px;
+      height: 60vh;
+      background: var(--glass-bg);
+      border-top-left-radius: var(--radius-card);
+      border-top-right-radius: var(--radius-card);
+      box-shadow: 0 -8px 32px 0 rgba(56, 96, 85, 0.25);
+      border: 2px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      z-index: 200;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(.4,1.4,.6,1);
+      right: 0;
+      margin: 0 auto;
+      left: 50%;
+      transform: translate(-50%, 100%);
+      overflow-y: auto;
+      padding: var(--space-lg) var(--space-md) var(--space-md) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
     }
-    fieldset {
-      margin-bottom: 16px;
-      border: 1px solid var(--text-muted);
-      padding: 8px;
-      border-radius: var(--radius);
+    .settings-panel.open {
+      transform: translate(-50%, 0);
     }
-    legend {
-      font-weight: bold;
-      padding: 0 4px;
+    .settings-panel h2 {
+      font-family: var(--font-hebrew);
+      color: var(--main-cyan);
+      text-align: center;
+      margin-bottom: var(--space-md);
+      font-size: 1.5rem;
+      letter-spacing: 0.04em;
     }
-    label {
+    .settings-panel fieldset {
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-card);
+      padding: var(--space-xs) var(--space-sm);
+      margin-bottom: var(--space-md);
+      background: rgba(255,255,255,0.04);
+    }
+    .settings-panel legend {
+      font-weight: 600;
+      font-family: var(--font-hebrew);
+      color: var(--main-cyan);
+      padding: 0 var(--space-xs);
+      font-size: 1.1rem;
+    }
+    .settings-panel label {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8px;
+      align-items: center;
+      margin-bottom: var(--space-xs);
+      font-size: 1rem;
+      font-family: var(--font-hebrew);
+      color: var(--main-white);
+      padding: var(--space-xs) 0;
     }
-    input[type="text"] {
-      width: 60px;
-      background: var(--bg-dark);
-      border: 1px solid var(--text-muted);
-      border-radius: 4px;
-      color: white;
+    .settings-panel input[type="checkbox"] {
+      accent-color: var(--main-cyan);
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 0.5rem;
+    }
+    .settings-panel input[type="text"] {
+      width: 4.5rem;
       padding: 4px;
+      background: var(--glass-bg);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 0.5rem;
+      color: var(--main-cyan);
+      font-family: var(--font-roman);
+      font-size: 1rem;
+      text-align: left;
+      margin-right: var(--space-xs);
     }
-    .buttons {
+    .settings-panel .buttons {
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
     }
-    .buttons button {
-      padding: 6px 12px;
-      border-radius: var(--radius);
-      background: var(--accent);
+    .settings-panel .buttons button {
+      padding: 8px 24px;
+      background: var(--main-cyan);
       border: none;
-      color: white;
+      border-radius: var(--radius-pill);
+      color: #222;
+      font-size: 1.1rem;
+      font-family: var(--font-hebrew);
+      font-weight: bold;
       cursor: pointer;
+      box-shadow: var(--main-shadow), var(--glow-cyan);
+      transition: background .2s, color .2s, box-shadow .2s;
+      margin-left: var(--space-xs);
+    }
+    .settings-panel .buttons button:hover {
+      background: #b2ebf2;
+      color: #376055;
+      box-shadow: var(--main-shadow), var(--glow-white);
+    }
+
+    /* Hide old modal */
+    .modal { display: none !important; }
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      #clock { font-size: 2.5rem; }
+      #countdown { font-size: 1.2rem; min-width: 120px; }
+      .settings-panel { max-width: 100vw; }
     }
   </style>
 </head>
 <body>
-  <button id="settingsBtn">⚙️</button>
   <div id="dayOfWeek"></div>
   <div id="calendarInfo"></div>
+  <div id="hebrewDate"></div>
   <div id="clock">00:00:00</div>
-  <div id="hebrewDate">תאריך עברי</div>
-  <div id="currentZmanLabel">--</div>
-  <div id="currentZmanTime">--:--</div>
-  <div id="countdown">--:--</div>
+  <div id="currentZmanLabel">טוען...</div>
+  <div id="currentZmanTime">00:00:00</div>
+  <div id="countdown">00:00</div>
   <div id="zmanList"></div>
-
-  <div id="settingsModal" class="modal hidden">
-    <div class="modal-content">
-      <h2>הגדרות</h2>
-      <form id="settingsForm">
-        <fieldset>
-          <legend>זמנים להצגה</legend>
-          <div id="zmanCheckboxes"></div>
-        </fieldset>
-        <fieldset>
-          <legend>התאמות אישיות (מנץ)</legend>
-          <label>ברכות <input type="text" name="ברכות" placeholder="-32:38" /></label>
-          <label>רבי ישמעאל <input type="text" name="רבי ישמעאל" placeholder="-19:22" /></label>
-          <label>ישתבח <input type="text" name="ישתבח" placeholder="-8:22" /></label>
-          <label>קריאת שמע <input type="text" name="קריאת שמע" placeholder="-4:52" /></label>
-          <label>אמת <input type="text" name="אמת" placeholder="-2:22" /></label>
-          <label>תהילות <input type="text" name="תהילות" placeholder="-0:22" /></label>
-        </fieldset>
-        <div class="buttons">
-          <button type="button" id="cancelSettings">ביטול</button>
-          <button type="submit">שמור</button>
-        </div>
-      </form>
-    </div>
+  <button id="settingsBtn" aria-label="הגדרות">⚙️</button>
+  <!-- Slide-in Settings Panel -->
+  <div id="settingsPanel" class="settings-panel">
+    <h2>הגדרות זמני יום</h2>
+    <form id="settingsForm">
+      <fieldset>
+        <legend>בחר אילו זמני יום להציג</legend>
+        <label><input type="checkbox" name="zman" value="Alos72"> עלות השחר</label>
+        <label><input type="checkbox" name="zman" value="Misheyakir10Point2Degrees"> משיכיר</label>
+        <label><input type="checkbox" name="zman" value="Sunrise"> הנץ החמה</label>
+        <label><input type="checkbox" name="zman" value="SofZmanShmaMGA"> סוף זמן קריאת שמע (מ״א)</label>
+        <label><input type="checkbox" name="zman" value="SofZmanShmaGRA"> סוף זמן קריאת שמע (ג״ר״א)</label>
+        <label><input type="checkbox" name="zman" value="SofZmanTfilaMGA"> סוף זמן תפילה (מ״א)</label>
+        <label><input type="checkbox" name="zman" value="SofZmanTfilaGRA"> סוף זמן תפילה (ג״ר״א)</label>
+        <label><input type="checkbox" name="zman" value="Chatzos"> חצות היום</label>
+        <label><input type="checkbox" name="zman" value="MinchaGedola"> מנחה גדולה</label>
+        <label><input type="checkbox" name="zman" value="MinchaKetana"> מנחה קטנה</label>
+        <label><input type="checkbox" name="zman" value="PlagHamincha"> פלג המנחה</label>
+        <label><input type="checkbox" name="zman" value="Sunset"> שקיעה</label>
+        <label><input type="checkbox" name="zman" value="Tzais"> צאת הכוכבים</label>
+      </fieldset>
+      <fieldset>
+        <legend>Offsets מותאמים (מ־נץ בדקות:שניות)</legend>
+        <label>ברכות  <input type="text" name="ברכות" placeholder="-32:38"></label>
+        <label>רבי ישמעאל  <input type="text" name="רבי ישמעאל" placeholder="-19:22"></label>
+        <label>ישתבח  <input type="text" name="ישתבח" placeholder="-8:22"></label>
+        <label>קריאת שמע  <input type="text" name="קריאת שמע" placeholder="-4:52"></label>
+        <label>אמת  <input type="text" name="אמת" placeholder="-2:22"></label>
+        <label>תהילות  <input type="text" name="תהילות" placeholder="-0:22"></label>
+      </fieldset>
+      <div class="buttons">
+        <button type="button" id="cancelSettings">ביטול</button>
+        <button type="submit">שמור</button>
+      </div>
+    </form>
   </div>
-
   <script>
-    const CORE_KEYS = {
-      Alos72: "עלות השחר",
-      Misheyakir10Point2Degrees: "משיכיר",
-      Sunrise: "הנץ החמה",
-      SofZmanShmaMGA: "סוף זמן שמע (מ״א)",
-      SofZmanShmaGRA: "סוף זמן שמע (ג״ר״א)",
-      SofZmanTfilaMGA: "סוף זמן תפילה (מ״א)",
-      SofZmanTfilaGRA: "סוף זמן תפילה (ג״ר״א)",
-      Chatzos: "חצות",
-      MinchaGedola: "מנחה גדולה",
-      MinchaKetana: "מנחה קטנה",
-      PlagHamincha: "פלג המנחה",
-      Sunset: "שקיעה",
-      Tzais: "צאת הכוכבים"
-    };
-    const CUSTOM_KEYS = ["ברכות","רבי ישמעאל","ישתבח","קריאת שמע","אמת","תהילות"];
-    const DEFAULT_OFFSETS = {"ברכות":-1958,"רבי ישמעאל":-1162,"ישתבח":-502,"קריאת שמע":-292,"אמת":-142,"תהילות":-22};
-
-    const now = new Date();
-    const dayOfWeek = document.getElementById("dayOfWeek");
-    const clock = document.getElementById("clock");
-    const countdown = document.getElementById("countdown");
-    const label = document.getElementById("currentZmanLabel");
-    const time = document.getElementById("currentZmanTime");
-    const zmanList = document.getElementById("zmanList");
-    const hebrewDateEl = document.getElementById("hebrewDate");
-    const calendarInfoEl = document.getElementById("calendarInfo");
-    const modal = document.getElementById("settingsModal");
-    const form = document.getElementById("settingsForm");
-    const cancelSettings = document.getElementById("cancelSettings");
+    // --- Slide-in settings panel logic ---
     const settingsBtn = document.getElementById("settingsBtn");
-    const checkboxes = document.getElementById("zmanCheckboxes");
+    const settingsPanel = document.getElementById("settingsPanel");
+    const cancelSettings = document.getElementById("cancelSettings");
 
-    let userVisible = JSON.parse(localStorage.getItem("visible")) || Object.keys(CORE_KEYS);
-    let userOffsets = JSON.parse(localStorage.getItem("offsets")) || DEFAULT_OFFSETS;
-
-    Object.entries(CORE_KEYS).forEach(([key, name]) => {
-      const wrapper = document.createElement("label");
-      wrapper.innerHTML = `<span>${name}</span><input type="checkbox" name="zman" value="${key}" ${userVisible.includes(key) ? "checked" : ""} />`;
-      checkboxes.appendChild(wrapper);
+    settingsBtn.onclick = () => settingsPanel.classList.add("open");
+    cancelSettings.onclick = () => settingsPanel.classList.remove("open");
+    settingsPanel.onclick = e => {
+      if (e.target === settingsPanel) settingsPanel.classList.remove("open");
+    };
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') settingsPanel.classList.remove('open');
     });
 
-    cancelSettings.onclick = () => modal.classList.add("hidden");
-    settingsBtn.onclick = () => modal.classList.remove("hidden");
-    modal.onclick = e => { if (e.target === modal) modal.classList.add("hidden"); };
+    // --- Main Halachic Clock Logic ---
+    (async ()=> {
+      const dayOfWeekEl = document.getElementById("dayOfWeek");
+      const calendarInfoEl = document.getElementById("calendarInfo");
+      const clockEl = document.getElementById("clock");
+      const hebrewDateEl = document.getElementById("hebrewDate");
+      const labelEl = document.getElementById("currentZmanLabel");
+      const timeEl = document.getElementById("currentZmanTime");
+      const countdownEl = document.getElementById("countdown");
+      const zmanListEl = document.getElementById("zmanList");
+      const settingsForm = document.getElementById("settingsForm");
 
-    form.onsubmit = e => {
-      e.preventDefault();
-      const visible = Array.from(form.querySelectorAll('input[name="zman"]:checked')).map(cb => cb.value);
-      localStorage.setItem("visible", JSON.stringify(visible));
-      const offsets = {};
-      CUSTOM_KEYS.forEach(k => {
-        const val = form[k]?.value || "";
-        const [m, s] = val.replace("-", "").split(":").map(Number);
-        const sec = (m || 0) * 60 + (s || 0);
-        offsets[k] = val.startsWith("-") ? -sec : sec;
-      });
-      localStorage.setItem("offsets", JSON.stringify(offsets));
-      location.reload();
-    };
+      const CORE_KEYS = [
+        "Alos72","Misheyakir10Point2Degrees","Sunrise","SofZmanShmaMGA","SofZmanShmaGRA",
+        "SofZmanTfilaMGA","SofZmanTfilaGRA","Chatzos","MinchaGedola","MinchaKetana",
+        "PlagHamincha","Sunset","Tzais"
+      ];
+      const CORE_LABELS = {
+        Alos72:"עלות השחר",
+        Misheyakir10Point2Degrees:"משיכיר",
+        Sunrise:"הנץ החמה",
+        SofZmanShmaMGA:"סוף זמן קריאת שמע (מ״א)",
+        SofZmanShmaGRA:"סוף זמן קריאת שמע (ג״ר״א)",
+        SofZmanTfilaMGA:"סוף זמן תפילה (מ״א)",
+        SofZmanTfilaGRA:"סוף זמן תפילה (ג״ר״א)",
+        Chatzos:"חצות היום",
+        MinchaGedola:"מנחה גדולה",
+        MinchaKetana:"מנחה קטנה",
+        PlagHamincha:"פלג המנחה",
+        Sunset:"שקיעה",
+        Tzais:"צאת הכוכבים"
+      };
+      const CUSTOM_KEYS = ["ברכות","רבי ישמעאל","ישתבח","קריאת שמע","אמת","תהילות"];
+      const DEFAULT_OFFSETS = {
+        "ברכות":-1958,
+        "רבי ישמעאל":-1162,
+        "ישתבח":-502,
+        "קריאת שמע":-292,
+        "אמת":-142,
+        "תהילות":-22
+      };
 
-    function formatTime(d) {
-      return d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
-    }
-
-    function formatCountdown(sec) {
-      const m = Math.floor(sec / 60);
-      const s = sec % 60;
-      return `${m}:${s.toString().padStart(2, "0")}`;
-    }
-
-    function updateClock() {
-      clock.textContent = formatTime(new Date());
-    }
-
-    async function loadHebrewDate() {
-      const today = new Date();
-      const res = await fetch(`https://www.hebcal.com/converter?cfg=json&gy=${today.getFullYear()}&gm=${today.getMonth()+1}&gd=${today.getDate()}&g2h=1`);
-      const data = await res.json();
-      hebrewDateEl.textContent = data.hebrew;
-    }
-
-    function updateZmanim() {
-      const { latitude, longitude } = navigator.geolocation
-        ? { latitude: 40.0821, longitude: -74.2097 }
-        : { latitude: 40.0821, longitude: -74.2097 };
-      const raw = KosherZmanim.getZmanimJson({
-        date: new Date().toISOString().split("T")[0],
-        timeZoneId: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        locationName: "Local",
-        latitude,
-        longitude,
-        elevation: 0,
-        complexZmanim: true
-      }).Zmanim;
-
-      const times = [];
-      if (new Date().getDay() === 5 && raw.Sunset) {
-        const candleTime = new Date(raw.Sunset);
-        candleTime.setMinutes(candleTime.getMinutes() - 18);
-        calendarInfoEl.innerHTML = `🕯️ הדלקת נרות: ${formatTime(candleTime)}`;
-        times.push({ name: "הדלקת נרות", time: candleTime });
+      function formatOffset(sec){
+        const sign=sec<0?'-':'';
+        sec=Math.abs(sec);
+        const m=Math.floor(sec/60), s=sec%60;
+        return `${sign}${m}:${s<10?'0'+s:s}`;
       }
-
-      userVisible.forEach(key => {
-        if (raw[key]) times.push({ name: CORE_KEYS[key], time: new Date(raw[key]) });
+      function parseOffset(str){
+        str=str.trim(); if(!str) return NaN;
+        const sign=str.startsWith('-')?-1:1;
+        str=str.replace(/^[+-]/,'');
+        const [mp,sp]=str.split(':');
+        const m=parseInt(mp,10), s=sp?parseInt(sp,10):0;
+        return isNaN(m)||isNaN(s)?NaN:sign*(m*60+s);
+      }
+      function updateDayOfWeek(){
+        const heb=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+        dayOfWeekEl.textContent = `יום ${heb[new Date().getDay()]}`;
+      }
+      let userVisible=JSON.parse(localStorage.getItem("visible")||"null");
+      if(!Array.isArray(userVisible)||!userVisible.length) userVisible=CORE_KEYS.slice();
+      const userOffsets=JSON.parse(localStorage.getItem("offsets"))||{...DEFAULT_OFFSETS};
+      settingsForm.querySelectorAll('input[name="zman"]').forEach(cb=>cb.checked=userVisible.includes(cb.value));
+      CUSTOM_KEYS.forEach(key=>{
+        const inp=settingsForm.querySelector(`input[name="${key}"]`);
+        if(inp) inp.value=formatOffset(userOffsets[key]);
       });
+      settingsForm.onsubmit=e=>{
+        e.preventDefault();
+        const vis=Array.from(settingsForm.querySelectorAll('input[name="zman"]:checked')).map(cb=>cb.value);
+        localStorage.setItem("visible",JSON.stringify(vis.length?vis:CORE_KEYS));
+        const offs={};
+        CUSTOM_KEYS.forEach(key=>{
+          const raw=settingsForm.querySelector(`input[name="${key}"]`).value;
+          const v=parseOffset(raw);
+          offs[key]=isNaN(v)?DEFAULT_OFFSETS[key]:v;
+        });
+        localStorage.setItem("offsets",JSON.stringify(offs));
+        settingsPanel.classList.remove("open");
+        location.reload();
+      };
 
-      if (raw.Sunrise) {
-        const netz = new Date(raw.Sunrise);
-        CUSTOM_KEYS.forEach(key => {
-          const t = new Date(netz.getTime() + userOffsets[key] * 1000);
-          times.push({ name: key, time: t });
+      function formatTime(d){
+        let t=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:false});
+        return t;
+      }
+      function formatCountdown(sec){
+        if (sec < 0) sec = 0;
+        const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+        const pad=n=>n<10?'0'+n:n;
+        return h>0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+      }
+      function updateClock(){ clockEl.textContent=formatTime(new Date()); }
+      async function updateHebrewDate(){
+        try{
+          const now=new Date();
+          const res=await fetch(`https://www.hebcal.com/converter?cfg=json&gy=${now.getFullYear()}&gm=${now.getMonth()+1}&gd=${now.getDate()}&g2h=1`);
+          hebrewDateEl.textContent=(await res.json()).hebrew;
+        }catch{ hebrewDateEl.textContent="שגיאה בתאריך"; }
+      }
+      async function fetchLocation(){
+        return new Promise(resolve=>{
+          if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(
+              pos=>resolve({lat:pos.coords.latitude,lon:pos.coords.longitude}),
+              ()=>resolve({lat:40.0821,lon:-74.2097}),
+              {enableHighAccuracy:true,timeout:10000}
+            );
+          } else resolve({lat:40.0821,lon:-74.2097});
         });
       }
 
-      times.sort((a, b) => a.time - b.time);
-      const now = new Date();
-      const next = times.find(t => t.time > now);
-      label.textContent = next?.name || "--";
-      time.textContent = next ? formatTime(next.time) : "--:--";
-      countdown.textContent = next ? formatCountdown(Math.floor((next.time - now) / 1000)) : "--:--";
+      updateDayOfWeek();
+      updateClock(); setInterval(updateClock,1000);
+      await updateHebrewDate();
 
-      zmanList.innerHTML = "";
-      times.forEach(t => {
-        if (t.time < now) return;
-        const div = document.createElement("div");
-        if (t.name === next?.name) div.classList.add("next");
-        div.innerHTML = `<span>${t.name}</span><span>${formatTime(t.time)}</span>`;
-        zmanList.appendChild(div);
+      const {lat,lon}=await fetchLocation();
+      const now=new Date();
+      const raw=KosherZmanim.getZmanimJson({
+        date:now.toISOString().slice(0,10),
+        timeZoneId:Intl.DateTimeFormat().resolvedOptions().timeZone,
+        locationName:"Local",latitude:lat,longitude:lon,
+        elevation:0,complexZmanim:true
+      }).Zmanim;
+
+      const list=[];
+      // Candle lighting (Friday)
+      if(now.getDay()===5 && raw.Sunset){
+        const cl=new Date(raw.Sunset);
+        cl.setMinutes(cl.getMinutes()-18);
+        list.push({name:"הדלקת נרות",time:cl});
+        calendarInfoEl.innerHTML = `<div style="color:#FFD700;font-weight:bold;">🕯️ הדלקת נרות: ${formatTime(cl)}</div>`;
+      }
+      CORE_KEYS.forEach(key=>{
+        if(userVisible.includes(key)&&raw[key]) list.push({name:CORE_LABELS[key],time:new Date(raw[key])});
       });
-    }
+      if(raw.Sunrise){
+        const netz=new Date(raw.Sunrise);
+        CUSTOM_KEYS.forEach(key=>{
+          const t=new Date(netz.getTime()+userOffsets[key]*1000);
+          list.push({name:key,time:t});
+        });
+      }
+      const sorted=list.sort((a,b)=>a.time-b.time);
+      let next=sorted.find(z=>z.time>new Date());
 
-    updateClock();
-    setInterval(updateClock, 1000);
-    loadHebrewDate();
-    updateZmanim();
-    setInterval(updateZmanim, 60000);
+      function render(){
+        const now=new Date();
+        next=sorted.find(z=>z.time>now);
+        if(next){
+          labelEl.textContent=next.name;
+          timeEl.textContent=formatTime(next.time);
+          countdownEl.textContent=formatCountdown(Math.floor((next.time-now)/1000));
+        } else {
+          labelEl.textContent="אין זמני יום זמינים כרגע";
+          timeEl.textContent="--:--:--";
+          countdownEl.textContent="--:--";
+        }
+        zmanListEl.innerHTML='';
+        sorted.forEach(({name,time})=>{
+          if(time<=now) return;
+          const div=document.createElement('div');
+          if(name===next?.name) div.classList.add('next');
+          div.innerHTML = `<span>${name}</span><span>${formatTime(time)}</span>`;
+          zmanListEl.append(div);
+        });
+      }
+      render();
+      setInterval(render,1000);
+    })();
   </script>
 </body>
 </html>
