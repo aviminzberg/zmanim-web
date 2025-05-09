@@ -3,14 +3,121 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>זמני היום</title>
+  <title>זמני וותיקין</title>
   <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/kosher-zmanim@0.9.0/dist/kosher-zmanim.min.js"></script>
+  <style>
+    body {
+      font-family: 'Varela Round', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+      color: #333;
+    }
+    #clock {
+      font-size: 2.5em;
+      text-align: center;
+      margin: 20px 0;
+    }
+    #hebrewDate {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+    #currentZmanLabel {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 10px 0;
+      color: #2c3e50;
+    }
+    #currentZmanTime {
+      text-align: center;
+      font-size: 2em;
+      margin: 10px 0;
+      color: #e74c3c;
+    }
+    #countdown {
+      text-align: center;
+      font-size: 1.8em;
+      margin: 10px 0;
+      color: #27ae60;
+    }
+    #zmanList {
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    #zmanList > div {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #zmanList > div.next {
+      background: #e8f5e9;
+      border: 2px solid #27ae60;
+    }
+    #settingsBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+    #settingsModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    #settingsModal > div {
+      background: #fff;
+      color: #222;
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+    legend {
+      font-weight: bold;
+      padding: 0 10px;
+    }
+    input[type="number"] {
+      width: 3em;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+  </style>
 </head>
 <body>
   <button id="settingsBtn">⚙️</button>
-  <div id="dayOfWeek"></div>
-  <div id="calendarInfo"></div>
   <div id="clock">00:00:00</div>
   <div id="hebrewDate">תאריך עברי</div>
   <div id="currentZmanLabel">טוען...</div>
@@ -19,9 +126,9 @@
   <div id="zmanList"></div>
 
   <!-- Settings Modal -->
-  <div id="settingsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:200;">
-    <div style="background:#fff;color:#222;border-radius:1rem;padding:2rem;max-width:400px;width:90vw;max-height:90vh;overflow-y:auto;">
-      <h2>הגדרות זמני יום</h2>
+  <div id="settingsModal">
+    <div>
+      <h2>הגדרות זמני וותיקין</h2>
       <form id="settingsForm">
         <fieldset>
           <legend>בחר תאריך עבור הגדרות מותאמות אישית</legend>
@@ -30,43 +137,27 @@
           <div id="selectedDateNetz" style="margin-bottom:10px;color:#666;font-size:0.95em;"></div>
         </fieldset>
         <fieldset>
-          <legend>בחר אילו זמני יום להציג</legend>
-          <label><input type="checkbox" name="zman" value="Alos72"> עלות השחר</label><br/>
-          <label><input type="checkbox" name="zman" value="Misheyakir10Point2Degrees"> משיכיר</label><br/>
-          <label><input type="checkbox" name="zman" value="Sunrise"> הנץ החמה</label><br/>
-          <label><input type="checkbox" name="zman" value="SofZmanShmaMGA"> סוף זמן קריאת שמע (מ״א)</label><br/>
-          <label><input type="checkbox" name="zman" value="SofZmanShmaGRA"> סוף זמן קריאת שמע (גר״א)</label><br/>
-          <label><input type="checkbox" name="zman" value="SofZmanTfilaMGA"> סוף זמן תפילה (מ״א)</label><br/>
-          <label><input type="checkbox" name="zman" value="SofZmanTfilaGRA"> סוף זמן תפילה (גר״א)</label><br/>
-          <label><input type="checkbox" name="zman" value="Chatzos"> חצות היום</label><br/>
-          <label><input type="checkbox" name="zman" value="MinchaGedola"> מנחה גדולה</label><br/>
-          <label><input type="checkbox" name="zman" value="MinchaKetana"> מנחה קטנה</label><br/>
-          <label><input type="checkbox" name="zman" value="PlagHamincha"> פלג המנחה</label><br/>
-          <label><input type="checkbox" name="zman" value="Sunset"> שקיעה</label><br/>
-          <label><input type="checkbox" name="zman" value="Tzais"> צאת הכוכבים</label>
-        </fieldset>
-        <fieldset>
           <legend>משך בין חלקי התפילה (דקות:שניות)</legend>
           <table style="width:100%;border-collapse:collapse;">
             <tr><th style="text-align:right;">מקטע</th><th>דקות</th><th>שניות</th></tr>
             <tr><td dir="rtl" style="text-align:right;">ברכות ⇠ ר' ישמעאל</td>
-              <td><input type="number" name="ברכות_min" min="0" max="60" value="13" style="width:3em;"></td>
-              <td><input type="number" name="ברכות_sec" min="0" max="59" value="16" style="width:3em;"></td></tr>
+              <td><input type="number" name="ברכות_min" min="0" max="60" value="8" style="width:3em;"></td>
+              <td><input type="number" name="ברכות_sec" min="0" max="59" value="0" style="width:3em;"></td></tr>
             <tr><td dir="rtl" style="text-align:right;">ר' ישמעאל ⇠ ישתבח</td>
               <td><input type="number" name="רבי ישמעאל_min" min="0" max="60" value="11" style="width:3em;"></td>
               <td><input type="number" name="רבי ישמעאל_sec" min="0" max="59" value="0" style="width:3em;"></td></tr>
             <tr><td dir="rtl" style="text-align:right;">ישתבח ⇠ שמע</td>
               <td><input type="number" name="ישתבח_min" min="0" max="60" value="3" style="width:3em;"></td>
-              <td><input type="number" name="ישתבח_sec" min="0" max="59" value="30" style="width:3em;"></td></tr>
+              <td><input type="number" name="ישתבח_sec" min="0" max="59" value="45" style="width:3em;"></td></tr>
             <tr><td dir="rtl" style="text-align:right;">שמע ⇠ אמת</td>
               <td><input type="number" name="קריאת שמע_min" min="0" max="60" value="2" style="width:3em;"></td>
               <td><input type="number" name="קריאת שמע_sec" min="0" max="59" value="30" style="width:3em;"></td></tr>
             <tr><td dir="rtl" style="text-align:right;">אמת ⇠ תהילות</td>
-              <td><input type="number" name="אמת_min" min="0" max="60" value="2" style="width:3em;"></td>
-              <td><input type="number" name="אמת_sec" min="0" max="59" value="0" style="width:3em;"></td></tr>
+              <td><input type="number" name="אמת_min" min="0" max="60" value="1" style="width:3em;"></td>
+              <td><input type="number" name="אמת_sec" min="0" max="59" value="45" style="width:3em;"></td></tr>
             <tr><td dir="rtl" style="text-align:right;">תהילות ⇠ נץ</td>
               <td><input type="number" name="תהילות_min" min="0" max="60" value="0" style="width:3em;"></td>
-              <td><input type="number" name="תהילות_sec" min="0" max="59" value="22" style="width:3em;"></td></tr>
+              <td><input type="number" name="תהילות_sec" min="0" max="59" value="30" style="width:3em;"></td></tr>
           </table>
         </fieldset>
         <div style="display:flex;justify-content:flex-end;gap:8px;">
@@ -80,8 +171,6 @@
 
   <script>
   (async ()=> {
-    const dayOfWeekEl    = document.getElementById("dayOfWeek");
-    const calendarInfoEl = document.getElementById("calendarInfo");
     const clockEl        = document.getElementById("clock");
     const hebrewDateEl   = document.getElementById("hebrewDate");
     const labelEl        = document.getElementById("currentZmanLabel");
@@ -98,10 +187,20 @@
     const today = new Date();
     settingsDatePicker.value = today.toISOString().split('T')[0];
 
-    const CORE_KEYS = ["Alos72","Misheyakir10Point2Degrees","Sunrise","SofZmanShmaMGA","SofZmanShmaGRA","SofZmanTfilaMGA","SofZmanTfilaGRA","Chatzos","MinchaGedola","MinchaKetana","PlagHamincha","Sunset","Tzais"];
-    const CORE_LABELS = {Alos72:"עלות השחר",Misheyakir10Point2Degrees:"משיכיר",Sunrise:"הנץ החמה",SofZmanShmaMGA:"סוף זמן קריאת שמע (מ״א)",SofZmanShmaGRA:"סוף זמן קריאת שמע (גר״א)",SofZmanTfilaMGA:"סוף זמן תפילה (מ״א)",SofZmanTfilaGRA:"סוף זמן תפילה (גר״א)",Chatzos:"חצות היום",MinchaGedola:"מנחה גדולה",MinchaKetana:"מנחה קטנה",PlagHamincha:"פלג המנחה",Sunset:"שקיעה",Tzais:"צאת הכוכבים"};
     const CUSTOM_KEYS = ["ברכות","רבי ישמעאל","ישתבח","קריאת שמע","אמת","תהילות"];
-    const DEFAULT_OFFSETS = {"ברכות":-1958,"רבי ישמעאל":-1162,"ישתבח":-502,"קריאת שמע":-292,"אמת":-142,"תהילות":-22};
+    const DEFAULT_OFFSETS = {
+      "ברכות": -1620,
+      "רבי ישמעאל": -1140,
+      "ישתבח": -480,
+      "קריאת שמע": -255,
+      "אמת": -105,
+      "תהילות": -30
+    };
+    const CORE_KEYS = ["Alos72", "Sunrise"];
+    const CORE_LABELS = {
+      Alos72: "עלות השחר",
+      Sunrise: "הנץ החמה"
+    };
 
     function formatTime(d){
       let t=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
@@ -114,11 +213,6 @@
     }
     function updateClock(){ clockEl.textContent=formatTime(new Date()); }
 
-    function updateDayOfWeek(date) {
-      const heb=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
-      dayOfWeekEl.textContent=`יום ${heb[date.getDay()]}`;
-    }
-
     async function updateHebrewDate(date) {
       try {
         const res=await fetch(`https://www.hebcal.com/converter?cfg=json&gy=${date.getFullYear()}&gm=${date.getMonth()+1}&gd=${date.getDate()}&g2h=1`);
@@ -127,7 +221,6 @@
     }
 
     async function fetchLocation(){
-      // Try cache first
       const cached = localStorage.getItem('location');
       if (cached) {
         try {
@@ -137,7 +230,6 @@
           }
         } catch {}
       }
-      // Prompt if not cached
       return new Promise(resolve => {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
@@ -220,18 +312,10 @@
         }
       });
 
-      // Restore zmanim checkboxes from 'visible' list
-      const visible = JSON.parse(localStorage.getItem("visible") || "null");
-      const visibleArr = Array.isArray(visible) && visible.length ? visible : CORE_KEYS.slice();
-      settingsForm.querySelectorAll('input[name="zman"]').forEach(cb => {
-        cb.checked = visibleArr.includes(cb.value);
-      });
-
       updateSelectedDateNetz(date);
     }
 
     settingsBtn.onclick = () => {
-      // Reset to today's date when opening settings
       settingsDatePicker.value = today.toISOString().split('T')[0];
       settingsModal.style.display = "flex";
       updateSettingsForm(today);
@@ -244,7 +328,6 @@
     settingsDatePicker.onchange = () => {
       const selectedDate = new Date(settingsDatePicker.value);
       if (isNaN(selectedDate.getTime())) {
-        // Invalid date
         settingsDatePicker.value = today.toISOString().split('T')[0];
         updateSettingsForm(today);
         return;
@@ -255,18 +338,12 @@
     settingsForm.onsubmit = e => {
       e.preventDefault();
       
-      // Validate date
       const selectedDate = new Date(settingsDatePicker.value);
       if (isNaN(selectedDate.getTime())) {
         alert('אנא בחר תאריך תקין');
         return;
       }
-
-      // Save visible zmanim list globally
-      const vis = Array.from(settingsForm.querySelectorAll('input[name="zman"]:checked')).map(cb => cb.value);
-      localStorage.setItem("visible", JSON.stringify(vis.length ? vis : CORE_KEYS));
       
-      // Gather durations
       const durations = {};
       CUSTOM_KEYS.forEach(key => {
         const min = parseInt(settingsForm.querySelector(`input[name='${key}_min']`).value, 10) || 0;
@@ -274,7 +351,6 @@
         durations[key] = min * 60 + sec;
       });
 
-      // Calculate offsets from netz (work backwards)
       let total = 0;
       const offsets = {};
       [...CUSTOM_KEYS].reverse().forEach(key => {
@@ -282,7 +358,6 @@
         offsets[key] = -total;
       });
 
-      // Store offsets for the selected date
       const dateStr = settingsDatePicker.value;
       localStorage.setItem(`offsets-${dateStr}`, JSON.stringify(offsets));
       
@@ -291,28 +366,19 @@
     };
 
     function render() {
-      // Always get the latest settings
-      userVisible = JSON.parse(localStorage.getItem("visible") || "null");
-      if (!Array.isArray(userVisible) || !userVisible.length) userVisible = CORE_KEYS.slice();
-      
       const now = new Date();
       const selectedDate = new Date(settingsDatePicker.value);
       userOffsets = getOffsetsForDate(selectedDate);
 
-      // Build the list fresh every time
       const list = [];
-      if(selectedDate.getDay() === 5 && raw.Sunset) {
-        const cl = new Date(raw.Sunset);
-        cl.setMinutes(cl.getMinutes() - 18);
-        list.push({name: "הדלקת נרות", time: cl});
-        calendarInfoEl.innerHTML = `<div style="color:#FFD700;font-weight:bold;">🕯️ הדלקת נרות: ${formatTime(cl)}</div>`;
-      }
       
+      // Add core zmanim (Alos and Netz)
       CORE_KEYS.forEach(key => { 
-        if(userVisible.includes(key) && raw[key]) 
+        if(raw[key]) 
           list.push({name: CORE_LABELS[key], time: new Date(raw[key])}); 
       });
       
+      // Add vesikin segments
       if(raw.Sunrise) {
         const netz = new Date(raw.Sunrise);
         CUSTOM_KEYS.forEach(key => {
@@ -323,14 +389,13 @@
 
       const sorted = list.slice().sort((a, b) => a.time - b.time);
 
-      // For countdown, use current time even when viewing future dates
       let next = sorted.find(z => z.time > now);
       if (next) {
         labelEl.textContent = next.name;
         timeEl.textContent = formatTime(next.time);
         countdownEl.textContent = formatCountdown(Math.floor((next.time - now) / 1000));
       } else {
-        labelEl.textContent = "אין זמני יום זמינים כרגע";
+        labelEl.textContent = "אין זמני וותיקין זמינים כרגע";
         timeEl.textContent = "--:--:--";
         countdownEl.textContent = "--:--";
       }
@@ -345,7 +410,6 @@
     }
 
     // Initial setup
-    updateDayOfWeek(today);
     updateClock(); 
     setInterval(updateClock, 1000);
     await updateHebrewDate(today);
@@ -355,9 +419,7 @@
     const resetBtn = document.getElementById('resetDefaults');
     if (resetBtn) {
       resetBtn.onclick = function() {
-        // Calculate default durations from DEFAULT_OFFSETS
         const defaults = offsetsToDurations(DEFAULT_OFFSETS);
-        // Fill the form fields
         CUSTOM_KEYS.forEach(key => {
           const minInp = settingsForm.querySelector(`input[name='${key}_min']`);
           const secInp = settingsForm.querySelector(`input[name='${key}_sec']`);
@@ -366,7 +428,6 @@
             secInp.value = defaults[key].seconds;
           }
         });
-        // Update localStorage offsets for the selected date
         const dateStr = settingsDatePicker.value;
         localStorage.setItem(`offsets-${dateStr}`, JSON.stringify(DEFAULT_OFFSETS));
         updateUserSettingsAndRender();
@@ -375,15 +436,11 @@
   })();
 
   function updateUserSettingsAndRender() {
-    // Update userVisible and userOffsets from localStorage
-    userVisible = JSON.parse(localStorage.getItem("visible") || "null");
-    if (!Array.isArray(userVisible) || !userVisible.length) userVisible = CORE_KEYS.slice();
     const selectedDate = new Date(document.getElementById('settingsDatePicker').value);
     userOffsets = getOffsetsForDate(selectedDate);
     render();
   }
 
-  // Add Reset to Default functionality
   function offsetsToDurations(offsets) {
     const keys = Object.keys(offsets).sort((a, b) => offsets[a] - offsets[b]);
     const durations = {};
@@ -396,7 +453,6 @@
         seconds: totalSeconds % 60
       };
     }
-    // Final stretch to netz
     const lastKey = keys[keys.length - 1];
     const lastSeconds = Math.abs(offsets[lastKey]);
     durations[lastKey] = {
